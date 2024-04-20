@@ -1,19 +1,31 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react';
 import defaultState from '../../../../resources/Close_Default.png';
 import hoverState from '../../../../resources/Close_Hover.png';
 import clickState from '../../../../resources/Close_Press.png';
+import hoverSound from '../../../../resources/hover.mp3';
 
 function CloseButton(): JSX.Element {
     const [buttonStyle, setButtonStyle] = useState({
         backgroundImage: `url(${defaultState})`
     });
 
+    const audioRefs = useRef<HTMLAudioElement[]>([]);
+
     const handleClose = () => {
         window.electron.ipcRenderer.send('minimize-app');
-      };
+    };
 
-    const handleMouseEnter = () => setButtonStyle({ backgroundImage: `url(${hoverState})` });
-    const handleMouseLeave = () => setButtonStyle({ backgroundImage: `url(${defaultState})` });
+    const handleMouseEnter = () => {
+        setButtonStyle({ backgroundImage: `url(${hoverState})` });
+        const audio = new Audio(hoverSound);
+        audioRefs.current.push(audio);
+        audio.play();
+    };
+
+    const handleMouseLeave = () => {
+        setButtonStyle({ backgroundImage: `url(${defaultState})` });
+    };
+
     const handleMouseDown = () => setButtonStyle({ backgroundImage: `url(${clickState})` });
     const handleMouseUp = () => setButtonStyle({ backgroundImage: `url(${defaultState})` });
 
@@ -48,4 +60,4 @@ function CloseButton(): JSX.Element {
     );
 }
 
-export default CloseButton
+export default CloseButton;
