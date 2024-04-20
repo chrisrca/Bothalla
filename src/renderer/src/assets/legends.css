@@ -1,11 +1,20 @@
 .image-gallery {
+    position: absolute;
+    top: 70px;
+    left: 180px;
     display: grid;
     grid-template-columns: repeat(12, 1fr);
     grid-template-rows: repeat(3, auto);
-    gap: 5px;
+    max-width: 81%;
+    row-gap: 10px; /* Adjust the vertical gap value here */
+    column-gap: 10px; /* Adjust the horizontal gap value here */
 }
 
 .image-gallery img {
     max-width: 100%;
-    height: auto;
+    transition: transform 0.3s ease; /* Adding transition for smooth scaling */
+}
+
+.image-gallery img:hover {
+    transform: scale(1.1); /* Scale the image on hover */
 }

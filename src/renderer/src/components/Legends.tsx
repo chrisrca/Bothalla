@@ -36,7 +36,7 @@ function Legends(): JSX.Element {
         <>
             <div className="image-gallery">
                 {imageUrls.slice(currentIndex * 12 * 3, currentIndex * 12 * 3 + 12 * 3).map((url, index) => (
-                    <img key={index} src={url} alt={`Fetched image ${currentIndex * 12 * 3 + index + 1}`} style={{ width: '70px' }} />
+                    <img key={index} src={url} alt={`Fetched image ${currentIndex * 12 * 3 + index + 1}`}/>
                 ))}
             </div>
             <div className="navigation-buttons">
