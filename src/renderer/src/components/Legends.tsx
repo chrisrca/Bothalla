@@ -1,9 +1,13 @@
 import { useEffect, useState } from 'react';
 import '../assets/legends.css';
+import RightButton from './RightButton';
+import LeftButton from './LeftButton';
 
 function Legends(): JSX.Element {
     const [imageUrls, setImageUrls] = useState<string[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [moveRight, setMoveRight] = useState<boolean>(true);
+    const [moveLeft, setMoveLeft] = useState<boolean>(true);
 
     useEffect(() => {
         const handleReceiveUrls = (_event, urls: string[]) => {
@@ -32,6 +36,22 @@ function Legends(): JSX.Element {
         }
     };
 
+    useEffect(() => {
+        if (moveRight) {
+            handleMoveRight();
+            setMoveRight(false);
+        }
+    }, [moveRight]);
+
+    useEffect(() => {
+        if (moveLeft) {
+            handleMoveLeft();
+            setMoveLeft(false);
+        }
+    }, [moveLeft]);
+
+    const totalGrids = Math.ceil(imageUrls.length / (12 * 3));
+
     return (
         <>
             <div className="image-gallery">
@@ -39,10 +59,8 @@ function Legends(): JSX.Element {
                     <img key={index} src={url} alt={`Fetched image ${currentIndex * 12 * 3 + index + 1}`}/>
                 ))}
             </div>
-            <div className="navigation-buttons">
-                <button onClick={handleMoveLeft} disabled={currentIndex === 0}>Left</button>
-                <button onClick={handleMoveRight} disabled={currentIndex === Math.ceil(imageUrls.length / (12 * 3)) - 1}>Right</button>
-            </div>
+            <RightButton moveRight={setMoveRight} currentIndex={currentIndex} totalGrids={totalGrids}/>
+            <LeftButton moveLeft={setMoveLeft} currentIndex={currentIndex}/>
         </>
     );
 }
