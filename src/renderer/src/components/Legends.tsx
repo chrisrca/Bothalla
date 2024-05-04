@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import '../assets/legends.css';
 import RightButton from './RightButton';
 import LeftButton from './LeftButton';
+import LegendGallery from './LegendGallery';
 
 function Legends(): JSX.Element {
     const [imageUrls, setImageUrls] = useState<string[]>([]);
@@ -54,11 +55,7 @@ function Legends(): JSX.Element {
 
     return (
         <>
-            <div className="image-gallery">
-                {imageUrls.slice(currentIndex * 12 * 3, currentIndex * 12 * 3 + 12 * 3).map((url, index) => (
-                    <img key={index} src={url} alt={`Fetched image ${currentIndex * 12 * 3 + index + 1}`}/>
-                ))}
-            </div>
+            <LegendGallery imageUrls={imageUrls} currentIndex={currentIndex}/>
             <RightButton moveRight={setMoveRight} currentIndex={currentIndex} totalGrids={totalGrids}/>
             <LeftButton moveLeft={setMoveLeft} currentIndex={currentIndex}/>
         </>
