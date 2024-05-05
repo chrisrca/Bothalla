@@ -23,12 +23,6 @@ $ yarn dev
 ### Build
 
 ```bash
-# For windows
+# Make sure this is done in an elevated cmd prompt and drag the src folder into the /resources folder in /dist
 $ yarn build:win
-
-# For macOS
-$ yarn build:mac
-
-# For Linux
-$ yarn build:linux
 ```
