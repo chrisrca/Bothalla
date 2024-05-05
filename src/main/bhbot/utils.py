@@ -21,7 +21,6 @@ from font_loader import get_font_name, load_font
 rfh.close()
 log.removeHandler(rfh)
 
-
 def get_text(element):
     if isinstance(element, Sg.Text):
         return element.get()
@@ -45,7 +44,6 @@ def my_emit(superclass, record):
             ["%s" for _ in range(len(record.args) - record.msg.count("%s"))]
         )
     superclass.emit(record)
-
 
 class MyStreamHandler(logging.StreamHandler):
     def emit(self, record):
@@ -351,9 +349,7 @@ class Settings:
             "settings", 'Missing "settings" entry in language'
         ).format(self)
 
-
 global_settings = Settings.load()
-
 
 def box(text, startmargin=True, endmargin=True):
     lines = text.split("\n")

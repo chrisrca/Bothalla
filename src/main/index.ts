@@ -129,3 +129,14 @@ const extractDataSources = (html) => {
   return urls;
 };
 
+function fetchLogs() {
+  axios.get('http://127.0.0.1:30000/get_logs')
+    .then(response => {
+      response.data.forEach(item => {
+        console.log(item);
+      });
+    })
+    .catch(_error => {});
+}
+
+setInterval(fetchLogs, 100);
