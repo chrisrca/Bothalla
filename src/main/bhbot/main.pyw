@@ -34,7 +34,5 @@ def toggle_bot():
 
 if __name__ == '__main__':
     port = find_free_port()
-    with open('..//flask.cfg', 'w') as config_file:
-        config_file.write(f"PORT={port}\n")
     print(f"Server starting on port {port}")
-    app.run(host='0.0.0.0', port=port, debug=True)
+    app.run(host='0.0.0.0', port=30000, debug=True)
