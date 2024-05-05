@@ -4,6 +4,10 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import axios from 'axios';
 import cheerio from 'cheerio';
+import fs from 'fs';
+import { exec } from 'child_process';
+
+let serverPort = "";
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
@@ -44,14 +48,68 @@ function createWindow(): void {
 app.whenReady().then(() => {
   electronApp.setAppUserModelId('com.electron')
 
+  const bhbotPath = join(__dirname, '..', 'src', 'main', 'bhbot').replace(/\\out/g, '');
+  const installDepsCommand = `pip install -r ${join(bhbotPath, 'requirements.txt')}`
+  
+  exec(installDepsCommand, { cwd: bhbotPath }, (error, stdout, stderr) => {
+    if (error) {
+        console.error(`Error installing dependencies: ${error}`);
+        console.error(stderr);  // This will print the error output from pip
+        return;
+    }
+    console.log('Dependencies installed:', stdout);
+    console.log('Installation errors (if any):', stderr);
+
+    // Command to run the Python script
+    const runPythonScriptCommand = `python ${join(bhbotPath, 'main.pyw')}`;
+
+    // Execute the command to run the Python script
+    exec(runPythonScriptCommand, { cwd: bhbotPath }, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`Error running Python script: ${error}`);
+            console.error(stderr);  // Print errors from Python script execution
+            return;
+        }
+        console.log('Python script output:', stdout);
+        console.error('Python script errors:', stderr);
+
+
+        
+    });
+  });
+
+  let configWatcher = fs.watch('.//src//main//flask.cfg', (eventType, filename) => {
+    if (eventType === 'change') {
+      console.log(`${filename} has changed, processing new configuration...`);
+      fs.readFile('.//src//main//flask.cfg', 'utf8', (err, data) => {
+        if (err) {
+            console.error('Error reading the configuration file:', err);
+            return;
+        }
+        const match = data.match(/PORT=(\d+)/);
+        if (match && match[1]) {
+            serverPort = match[1];
+        } else {
+            console.error('Port configuration not found or invalid in flask.cfg');
+        }
+      }); 
+      configWatcher.close();
+    }
+  });
+
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
   })
 
   ipcMain.on('request-urls', async (event) => {
     const urls = await fetchAndProcessHTML('https://brawlhalla.fandom.com/wiki/Brawlhalla_Wiki');
-    console.log(urls);
     event.reply('response-urls', urls);
+  });
+
+  ipcMain.on('toggle-bot', async () => {
+    axios.post(`http://127.0.0.1:${serverPort}/toggle_bot`)
+        .then(response => console.log(response.data))
+        .catch(error => console.error('Error:', error));
   });
 
   createWindow()

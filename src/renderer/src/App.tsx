@@ -5,6 +5,10 @@ import CloseButton from './components/CloseButton';
 import Legends from './components/Legends';
 
 function App(): JSX.Element {
+  const testIPC = () => {
+    window.electron.ipcRenderer.send('toggle-bot');
+  }
+
   return (
     <div style={{
       backgroundImage: `url(${backgroundImage})`,
@@ -26,6 +30,8 @@ function App(): JSX.Element {
       }}>
       </div>
       <Legends></Legends>
+      <button onClick={testIPC}>
+      </button>
 
     </div>
   );

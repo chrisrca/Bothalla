@@ -6,15 +6,26 @@
     grid-template-columns: repeat(12, 1fr);
     grid-template-rows: repeat(3, auto);
     max-width: 81%;
-    row-gap: 10px; /* Adjust the vertical gap value here */
-    column-gap: 10px; /* Adjust the horizontal gap value here */
+    row-gap: 10px;
+    column-gap: 10px;
+}
+
+.image-gallery img.selected {
+    border: 3px solid #ffff00 !important;
+    border-radius: 10px;
 }
 
 .image-gallery img {
     max-width: 100%;
-    transition: transform 0.3s ease; /* Adding transition for smooth scaling */
+    transition: transform 0.3s ease;
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
 }
 
 .image-gallery img:hover {
-    transform: scale(1.1); /* Scale the image on hover */
+    transform: scale(1.1);
+    border: 2px solid #00bdf1;
+    border-radius: 10px;
 }

@@ -1,0 +1,4 @@
+name: bhbot-environment
+
+dependencies:
+    - pip
