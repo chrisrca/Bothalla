@@ -132,6 +132,16 @@ const extractDataSources = (html) => {
   return urls;
 };
 
+function parseCharacterData(data) {
+  const regex = /<([^>]+) \(lvl: (\d+), xp: (\d+), unlocked: (True|False)\)>/;
+  const [, name, level, xp] = regex.exec(data) || [];
+  return name ? {
+      name: name.trim(),
+      level: parseInt(level),
+      xp: parseInt(xp)
+  } : null;
+}
+
 function fetchLogs() {
   if (runBot) {
     axios.get('http://127.0.0.1:30000/get_logs')
@@ -157,7 +167,12 @@ function fetchLogs() {
             console.log("Character data loaded");
             break;
           default:
-            console.log(item);
+            if (item.startsWith("<") && item.endsWith(">")) {
+              const parsedData = parseCharacterData(item);
+              console.log("Parsed Character Data: ", parsedData);
+            } else {
+              console.log(item)
+            }
         }
       });
     })

@@ -6,6 +6,11 @@ from direct_input import *
 from menu import find_element, regenerate_layout
 from windows import *
 
+from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
+from comtypes import CLSCTX_ALL
+from ctypes import cast, POINTER
+import pythoncom
+
 CONNECTION_LEVELS = (
     (0, 204, 51),  # green
     (255, 255, 51),  # yellow
@@ -105,6 +110,14 @@ class BrawlhallaBot:
 
     def initialize(self):
         self.ensure_brawlhalla()
+        pythoncom.CoInitialize()
+        sessions = AudioUtilities.GetAllSessions()
+        for session in sessions:
+            interface = session.SimpleAudioVolume
+            if session.Process and session.Process.name() == "BrawlhallaGame.exe":
+                # Set mute to True, 1 to unmute
+                interface.SetMute(1, None)
+                logger.info(f"Muted BrawlhallaGame.exe")
         self.duration = 15
 
         self.go_to_menu(True)

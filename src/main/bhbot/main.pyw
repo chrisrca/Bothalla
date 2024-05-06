@@ -28,6 +28,7 @@ class MemoryHandler(logging.Handler):
             if len(self.log_records) >= self.capacity:
                 self.log_records.pop(0)
             self.log_records.append(message)
+            print(message) 
         except:
             pass
 
@@ -48,6 +49,13 @@ def monitor_activity():
             print("No GET /get_logs request received in last 5 seconds, shutting down.")
             if bot_thread and bot_thread.is_alive():
                 bot_queue.put_nowait('STOP')
+            pythoncom.CoInitialize()
+            sessions = AudioUtilities.GetAllSessions()
+            for session in sessions:
+                interface = session.SimpleAudioVolume
+                if session.Process and session.Process.name() == "BrawlhallaGame.exe":
+                    interface.SetMute(0, None)
+                    logger.info(f"Muted BrawlhallaGame.exe")
             brawlhalla = BrawlhallaProcess.find()
             if brawlhalla:
                 brawlhalla.kill()
@@ -56,6 +64,9 @@ def monitor_activity():
 
 @app.before_first_request
 def initialize_bot():
+    brawlhalla = BrawlhallaProcess.find()
+    if brawlhalla:
+        brawlhalla.kill()
     global bot_thread
     config = Config.load()
     bot = BrawlhallaBot(config, Hotkeys.load(), bot_queue)
