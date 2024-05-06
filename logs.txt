@@ -1,0 +1,292 @@
+{'sorted_by_date'}
+<B├╢dvar (lvl: 1, xp: 174, unlocked: False)>
+{'sorted_by_date'}
+<Cassidy (lvl: 9, xp: 579, unlocked: True)>
+{'sorted_by_date'}
+<Orion (lvl: 27, xp: 2806, unlocked: True)>
+{'sorted_by_date'}
+<Lord vraxx (lvl: 2, xp: 295, unlocked: False)>
+{'sorted_by_date'}
+<Gnash (lvl: 4, xp: 85, unlocked: False)>
+{'sorted_by_date'}
+<Queen nai (lvl: 7, xp: 410, unlocked: False)>
+{'sorted_by_date'}
+<Hattori (lvl: 26, xp: 902, unlocked: True)>
+{'sorted_by_date'}
+<Sir roland (lvl: 1, xp: 2, unlocked: False)>
+{'sorted_by_date'}
+<Scarlet (lvl: 26, xp: 1886, unlocked: True)>
+{'sorted_by_date'}
+<Thatch (lvl: 30, xp: 286, unlocked: False)>
+{'sorted_by_date'}
+<Ada (lvl: 2, xp: 143, unlocked: False)>
+{'sorted_by_date'}
+<Sentinel (lvl: 1, xp: 188, unlocked: False)>
+{'sorted_by_date'}
+<Lucien (lvl: 8, xp: 545, unlocked: True)>
+{'sorted_by_date'}
+<Teros (lvl: 5, xp: 343, unlocked: False)>
+{'sorted_by_date'}
+<Brynn (lvl: 1, xp: 146, unlocked: False)>
+{'sorted_by_date'}
+<Asuri (lvl: 14, xp: 1325, unlocked: True)>
+{'sorted_by_date'}
+<Barraza (lvl: 7, xp: 477, unlocked: True)>
+{'sorted_by_date'}
+<Ember (lvl: 12, xp: 846, unlocked: True)>
+{'sorted_by_date'}
+<Azoth (lvl: 3, xp: 351, unlocked: False)>
+{'sorted_by_date'}
+<Koji (lvl: 8, xp: 953, unlocked: True)>
+{'sorted_by_date'}
+<Ulgrim (lvl: 16, xp: 478, unlocked: True)>
+{'sorted_by_date'}
+<Diana (lvl: 11, xp: 154, unlocked: False)>
+{'sorted_by_date'}
+<Jhala (lvl: 1, xp: 80, unlocked: False)>
+{'sorted_by_date'}
+<Kor (lvl: 7, xp: 687, unlocked: True)>
+{'sorted_by_date'}
+<Wu shang (lvl: 8, xp: 583, unlocked: True)>
+{'sorted_by_date'}
+<Val (lvl: 3, xp: 349, unlocked: False)>
+{'sorted_by_date'}
+<Ragnir (lvl: 10, xp: 198, unlocked: True)>
+{'sorted_by_date'}
+<Cross (lvl: 1, xp: 2, unlocked: False)>
+{'sorted_by_date'}
+<Mirage (lvl: 4, xp: 353, unlocked: False)>
+{'sorted_by_date'}
+<Nix (lvl: 15, xp: 1286, unlocked: True)>
+{'sorted_by_date'}
+<Mordex (lvl: 33, xp: 5238, unlocked: True)>
+{'sorted_by_date'}
+<Yumiko (lvl: 14, xp: 189, unlocked: True)>
+{'sorted_by_date'}
+<Artemis (lvl: 27, xp: 3428, unlocked: True)>
+{'sorted_by_date'}
+<Caspian (lvl: 14, xp: 106, unlocked: True)>
+{'sorted_by_date'}
+<Sidra (lvl: 5, xp: 363, unlocked: False)>
+{'sorted_by_date'}
+<Xull (lvl: 27, xp: 1383, unlocked: True)>
+{'sorted_by_date'}
+<Kaya (lvl: 9, xp: 575, unlocked: True)>
+{'sorted_by_date'}
+<Isaiah (lvl: 14, xp: 701, unlocked: True)>
+{'sorted_by_date'}
+<Jiro (lvl: 9, xp: 111, unlocked: False)>
+{'sorted_by_date'}
+<Lin fei (lvl: 15, xp: 1844, unlocked: True)>
+{'sorted_by_date'}
+<Zariel (lvl: 2, xp: 178, unlocked: False)>
+{'sorted_by_date'}
+<Rayman (lvl: 26, xp: 2582, unlocked: True)>
+{'sorted_by_date'}
+<Dusk (lvl: 1, xp: 133, unlocked: False)>
+{'sorted_by_date'}
+<Fait (lvl: 8, xp: 52, unlocked: True)>
+{'sorted_by_date'}
+<Thor (lvl: 2, xp: 4, unlocked: False)>
+{'sorted_by_date'}
+<Petra (lvl: 7, xp: 590, unlocked: True)>
+{'sorted_by_date'}
+<Vector (lvl: 8, xp: 232, unlocked: False)>
+{'sorted_by_date'}
+<Volkov (lvl: 7, xp: 244, unlocked: True)>
+{'sorted_by_date'}
+<Onyx (lvl: 8, xp: 569, unlocked: False)>
+{'sorted_by_date'}
+<Jaeyun (lvl: 3, xp: 229, unlocked: False)>
+{'sorted_by_date'}
+<Mako (lvl: 3, xp: 235, unlocked: False)>
+{'sorted_by_date'}
+<Magyar (lvl: 3, xp: 171, unlocked: False)>
+{'sorted_by_date'}
+<Reno (lvl: 1, xp: 2, unlocked: False)>
+{'sorted_by_date'}
+<Munin (lvl: 1, xp: 33, unlocked: False)>
+{'sorted_by_date'}
+<Arcadia (lvl: 1, xp: 196, unlocked: False)>
+{'sorted_by_date'}
+<Ezio (lvl: 25, xp: 3924, unlocked: False)>
+{'sorted_by_date'}
+<Tezca (lvl: 5, xp: 375, unlocked: False)>
+{'sorted_by_date'}
+<Thea (lvl: 2, xp: 143, unlocked: False)>
+{'sorted_by_date'}
+<Red raptor (lvl: 4, xp: 15, unlocked: False)>
+{'sorted_by_date'}
+<Loki (lvl: 1, xp: 2, unlocked: False)>
+{'sorted_by_date'}
+<Seven (lvl: 1, xp: 2, unlocked: False)>
+{'sorted_by_date'}
+<Vivi (lvl: 1, xp: 2, unlocked: False)>
+{'sorted_by_date'}
+not_in_menu
+{'menu'}
+initialized
+{'menu'}
+creating_lobby
+{'menu'}
+{'menu'}
+{'menu'}
+{'menu'}
+{'menu'}
+{'menu'}
+{'menu'}
+{'menu'}
+{'menu'}
+{'menu'}
+{'lobby', 'menu'}
+{'lobby', 'menu'}
+setting_lobby
+{'lobby', 'menu'}
+{'lobby', 'menu'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+set()
+{'lobby', 'menu'}
+{'lobby', 'menu'}
+{'lobby', 'menu'}
+{'lobby', 'menu'}
+{'lobby', 'menu'}
+{'lobby', 'menu'}
+{'lobby', 'menu'}
+{'lobby', 'menu'}
+{'lobby', 'menu'}
+{'lobby', 'menu'}
+{'lobby', 'menu'}
+{'lobby', 'menu'}
+{'lobby', 'menu'}
+{'lobby', 'menu'}
+{'lobby', 'menu'}
+{'lobby', 'menu'}
+{'lobby', 'menu'}
+{'lobby', 'menu'}
+{'lobby', 'menu'}
+{'lobby', 'menu'}
+{'lobby', 'menu'}
+{'lobby', 'menu'}
+{'lobby', 'menu'}
+{'lobby', 'menu'}
+{'lobby', 'menu'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+{'settings_open'}
+set()
+{'lobby', 'menu'}
+{'lobby', 'menu'}
+{'lobby', 'menu'}
+{'lobby', 'menu'}
+starting_game
+{'lobby', 'menu'}
+waiting_for_loading
+{'lobby', 'menu'}
+waiting_for_loading
+{'lobby', 'menu'}
+waiting_for_loading
+{'loading'}
+{'loading'}
+loading
+{'loading'}
+loading
+{'loading'}
+loading
+{'loading'}
+loading
+{'loading'}
+loading
+{'loading'}
+loading
+{'loading'}
+loading
+set()
+{'ingame', 'low_connection'}
+loaded
+{'ingame', 'low_connection', 'menu'}
+{'ingame', 'low_connection', 'menu'}
+{'ingame', 'low_connection', 'menu'}
+started_fighting
+{'ingame', 'low_connection', 'menu'}
+{'ingame', 'low_connection', 'menu'}
+{'ingame', 'low_connection', 'menu'}
+{'ingame', 'low_connection', 'menu'}
+{'ingame', 'low_connection', 'menu'}
+{'ingame', 'low_connection', 'menu'}
+{'ingame', 'low_connection', 'menu'}
+{'ingame', 'low_connection', 'menu'}
+{'ingame', 'low_connection', 'menu'}
+{'ingame', 'low_connection', 'menu'}
+{'ingame', 'low_connection'}
+{'ingame', 'low_connection'}
+{'ingame', 'low_connection'}
+{'ingame', 'low_connection'}
+{'ingame', 'low_connection'}
+{'ingame', 'low_connection'}
+{'ingame', 'low_connection'}
+{'ingame', 'low_connection'}
+{'ingame', 'low_connection'}
+{'ingame', 'low_connection'}
+{'ingame', 'low_connection'}
+{'ingame', 'low_connection'}
+{'ingame', 'low_connection'}
+{'ingame', 'low_connection'}
+{'ingame', 'low_connection'}
+{'ingame', 'low_connection'}

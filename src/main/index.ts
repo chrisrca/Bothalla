@@ -6,6 +6,8 @@ import axios from 'axios';
 import cheerio from 'cheerio';
 import { exec } from 'child_process';
 
+let runBot = false;
+
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
     width: 1150,
@@ -57,41 +59,42 @@ app.whenReady().then(() => {
     console.log('Dependencies installed:', stdout);
     console.log('Installation errors (if any):', stderr);
 
-    // Command to run the Python script
-    const runPythonScriptCommand = `python ${join(bhbotPath, 'main.pyw')}`;
+    createWindow()
 
     // Execute the command to run the Python script
-    exec(runPythonScriptCommand, { cwd: bhbotPath }, (error, stdout, stderr) => {
-        if (error) {
-            console.error(`Error running Python script: ${error}`);
-            console.error(stderr);  // Print errors from Python script execution
-            return;
-        }
-        console.log('Python script output:', stdout);
-        console.error('Python script errors:', stderr);
+    app.on('browser-window-created', (_, window) => {
+      optimizer.watchWindowShortcuts(window)
+    })
+  
+    ipcMain.on('request-urls', async (event) => {
+      const urls = await fetchAndProcessHTML('https://brawlhalla.fandom.com/wiki/Brawlhalla_Wiki');
+      event.reply('response-urls', urls);
     });
+  
+    ipcMain.on('toggle-bot', async () => {
+    
+      const runPythonScriptCommand = `python ${join(bhbotPath, 'main.pyw')}`;
+
+      if (!runBot) {
+        runBot = true
+        exec(runPythonScriptCommand, { cwd: bhbotPath }, (error, stdout, stderr) => {
+          if (error) {
+              console.error(`Error running Python script: ${error}`);
+              console.error(stderr);  // Print errors from Python script execution
+              return;
+          }
+          console.log('Python script output:', stdout);
+          console.error('Python script errors:', stderr);  
+        });
+      } else {
+        runBot = false
+      }
+    });
+    
+    app.on('activate', function () {
+      if (BrowserWindow.getAllWindows().length === 0) createWindow()
+    })
   });
-
-  app.on('browser-window-created', (_, window) => {
-    optimizer.watchWindowShortcuts(window)
-  })
-
-  ipcMain.on('request-urls', async (event) => {
-    const urls = await fetchAndProcessHTML('https://brawlhalla.fandom.com/wiki/Brawlhalla_Wiki');
-    event.reply('response-urls', urls);
-  });
-
-  ipcMain.on('toggle-bot', async () => {
-    axios.post(`http://127.0.0.1:30000/toggle_bot`)
-        .then(response => console.log(response.data))
-        .catch(error => console.error('Error:', error));
-  });
-
-  createWindow()
-
-  app.on('activate', function () {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
-  })
 })
 
 app.on('window-all-closed', () => {
@@ -130,13 +133,36 @@ const extractDataSources = (html) => {
 };
 
 function fetchLogs() {
-  axios.get('http://127.0.0.1:30000/get_logs')
+  if (runBot) {
+    axios.get('http://127.0.0.1:30000/get_logs')
     .then(response => {
       response.data.forEach(item => {
-        console.log(item);
+        switch (item) {
+          case 'waiting_for_bh_window':
+            console.log("Waiting for Brawlhalla to load");
+            break;
+          case 'found_bh':
+            console.log("Found Brawlhalla");
+            break;
+          case 'move_offscreen':
+            console.log("Hid Brawlhalla");
+            break;
+          case 'not_in_menu':
+            console.log("Waiting for menu");
+            break;
+          case 'collecting_character_data':
+            console.log("Reading character levels");
+            break;
+          case 'initialized':
+            console.log("Character data loaded");
+            break;
+          default:
+            console.log(item);
+        }
       });
     })
     .catch(_error => {});
+  }
 }
 
 setInterval(fetchLogs, 100);
