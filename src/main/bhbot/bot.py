@@ -535,12 +535,15 @@ class BrawlhallaBot:
             self.get_states()
 
     def pick_character(self):
-        logger.info("pick_char", self.mode.next_character)
-        if self.character != self.mode.next_character:
-            self.execute_steps(
-                *self.character.get_path_to(self.mode.next_character.name)
-            )
-            self.character = self.mode.next_character
+        try:
+            logger.info("pick_char", self.mode.next_character)
+            if self.character != self.mode.next_character:
+                self.execute_steps(
+                    *self.character.get_path_to(self.mode.next_character.name)
+                )
+                self.character = self.mode.next_character
+        except:
+            logger.info("locked_character")
 
     def set_duration(self):
         logger.info("setting_dur", self.mode.next_duration)
@@ -602,7 +605,10 @@ class BrawlhallaBot:
         )
 
     def before_fight(self):
-        self.execute_steps(2, self.pick_character, 1, self.set_duration, 1)
+        try:
+            self.execute_steps(2, self.pick_character, 1, self.set_duration, 1)
+        except:
+            logger.info("locked_character")
 
     def go_to_fight(self):
         self.process_queue(True)

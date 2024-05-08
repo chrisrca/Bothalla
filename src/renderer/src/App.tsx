@@ -3,12 +3,9 @@ import backgroundImage from '../../../resources/Background.png';
 import backgroundButtonImage from '../../../resources/Button_Background.png';
 import CloseButton from './components/CloseButton';
 import Legends from './components/Legends';
+import RunButton from './components/RunButton';
 
 function App(): JSX.Element {
-  const testIPC = () => {
-    window.electron.ipcRenderer.send('toggle-bot');
-  }
-
   return (
     <div style={{
       backgroundImage: `url(${backgroundImage})`,
@@ -30,9 +27,7 @@ function App(): JSX.Element {
       }}>
       </div>
       <Legends></Legends>
-      <button onClick={testIPC}>
-      </button>
-
+      <RunButton/>
     </div>
   );
 }

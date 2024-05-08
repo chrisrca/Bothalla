@@ -15,6 +15,8 @@ CORS(app)
 # Queue and thread to manage the bot
 bot_queue = queue.Queue()
 bot_thread = None
+config = Config.load()
+bot = BrawlhallaBot(config, Hotkeys.load(), bot_queue)
 
 class MemoryHandler(logging.Handler):
     def __init__(self, capacity=100):
@@ -64,17 +66,16 @@ def monitor_activity():
 
 @app.before_first_request
 def initialize_bot():
+    bot.config = Config.load()
     brawlhalla = BrawlhallaProcess.find()
     if brawlhalla:
         brawlhalla.kill()
-    global bot_thread
-    config = Config.load()
-    bot = BrawlhallaBot(config, Hotkeys.load(), bot_queue)
     bot_thread = threading.Thread(target=bot.main_loop, daemon=True)
     bot_thread.start()
 
 @app.route('/get_logs', methods=['GET'])
 def get_logs():
+    bot.config = Config.load()
     global last_request_time
     last_request_time = datetime.now()  # Update the last request time on each call
     logs = memory_handler.get_logs()

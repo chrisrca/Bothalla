@@ -1,6 +1,5 @@
 from abstract_mode import Mode
 
-
 class LowestTo25(Mode):
     name = {
         'default': 'Leveling up characters to level 25',
@@ -23,4 +22,5 @@ class LowestTo25(Mode):
         try:
             return next(filter(lambda x: x.level < 25, sorted_by_xp))
         except StopIteration:
+            
             return sorted_by_xp[0]

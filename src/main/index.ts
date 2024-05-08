@@ -4,6 +4,7 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import axios from 'axios';
 import cheerio from 'cheerio';
+import fs from 'fs';
 import { exec } from 'child_process';
 
 let runBot = false;
@@ -69,6 +70,52 @@ app.whenReady().then(() => {
     ipcMain.on('request-urls', async (event) => {
       const urls = await fetchAndProcessHTML('https://brawlhalla.fandom.com/wiki/Brawlhalla_Wiki');
       event.reply('response-urls', urls);
+    });
+
+    ipcMain.on('request-selected', async (event) => {
+      const configPath = join(app.getPath('appData'), '..', 'Local', 'BHBot', 'bhbot.cfg');
+
+      const reverseFormatCharacterName = (formattedName: string): string => {
+        return formattedName.split(' ').map((word, index) => {
+            if (index !== 0) { // Capitalize the first letter of each subsequent word
+                return word.charAt(0).toUpperCase() + word.slice(1);
+            }
+            return word;
+        }).join('');
+      };
+
+      const configFile = fs.readFileSync(configPath, { encoding: 'utf-8' });
+      const config = JSON.parse(configFile);
+      event.reply('response-selected', reverseFormatCharacterName(config.character));
+    });
+    
+    ipcMain.on('legend', async (_event, newCharacter: string) => {
+      const configPath = join(app.getPath('appData'), '..', 'Local', 'BHBot', 'bhbot.cfg');
+      
+      const formatCharacterName = (name: string): string => {
+        // Transform the string according to the specified rules
+        return name.split('')
+                   .map((char, index) => {
+                       if (index !== 0 && char === char.toUpperCase()) {
+                           return ` ${char.toLowerCase()}`;
+                       }
+                       return char;
+                   })
+                   .join('');
+      };
+
+      const formattedCharacter = formatCharacterName(newCharacter);
+
+      try {
+        const configFile = fs.readFileSync(configPath, { encoding: 'utf-8' });
+        const config = JSON.parse(configFile);
+        config.character = formattedCharacter;
+        const formattedJson = JSON.stringify(config, null, 0)
+          .replace(/:/g, ': ')
+          .replace(/,/g, ', ');
+
+          fs.writeFileSync(configPath, formattedJson, { encoding: 'utf-8' });
+      } catch {}
     });
   
     ipcMain.on('toggle-bot', async () => {
