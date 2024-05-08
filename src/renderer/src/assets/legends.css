@@ -10,22 +10,41 @@
     column-gap: 10px;
 }
 
-.image-gallery img.selected {
-    border: 3px solid #ffff00 !important;
-    border-radius: 10px;
+.image-container {
+    position: relative;
+    cursor: pointer; /* Indicates the element is interactive */
 }
 
-.image-gallery img {
+/* Styling for the static image */
+.static-image {
+    transform: scale(1.1); /* Adjust scale as needed */
+    position: absolute;
     max-width: 100%;
     transition: transform 0.3s ease;
     -webkit-user-drag: none;
-    -khtml-user-drag: none;
-    -moz-user-drag: none;
-    -o-user-drag: none;
+    border-radius: 10px;
+    user-select: none;
 }
 
-.image-gallery img:hover {
-    transform: scale(1.1);
+/* Styling for the dynamic image */
+.dynamic-image {
+    transform: scale(0.9); /* Adjust scale as needed */
+    max-width: 100%;
+    transition: transform 0.3s ease;
+    -webkit-user-drag: none;
+    user-select: none;
+}
+
+.image-container:hover .static-image {
+    transform: scale(1.2);
     border: 2px solid #00bdf1;
     border-radius: 10px;
+}
+
+.image-container:hover .dynamic-image {
+    transform: scale(0.95);
+}
+
+.image-container.selected .static-image {
+    border: 3px solid #ffff00; 
 }

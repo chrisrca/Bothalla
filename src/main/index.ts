@@ -63,12 +63,14 @@ app.whenReady().then(() => {
   };
 
   const configPath = join(app.getPath('appData'), '..', 'Local', 'BHBot', 'bhbot.cfg');
+  const legendsPath = join(app.getPath('appData'), '..', 'Local', 'BHBot', 'legends.cfg');
   const bhbotPath = join(__dirname, '..', 'src', 'main', 'bhbot').replace(/\\out/g, '').replace(/\\app.asar/g, '');
   const installDepsCommand = `pip install -r ${join(bhbotPath, 'requirements.txt')}`
   
-  if (!fs.existsSync(configPath)) {
+  if (!fs.existsSync(configPath) || !fs.existsSync(legendsPath)) {
     fs.mkdirSync(join(app.getPath('appData'), '..', 'Local', 'BHBot'), { recursive: true });
     fs.writeFileSync(configPath, JSON.stringify(defaultConfig), { encoding: 'utf-8' });
+    fs.writeFileSync(legendsPath, '');
   }
 
   exec(installDepsCommand, { cwd: bhbotPath }, (error, stdout, stderr) => {
@@ -88,15 +90,38 @@ app.whenReady().then(() => {
     })
   
     ipcMain.on('request-urls', async (event) => {
-      const urls = await fetchAndProcessHTML('https://brawlhalla.fandom.com/wiki/Brawlhalla_Wiki');
-      event.reply('response-urls', urls);
+      try {
+        const urls = await fetchAndProcessHTML('https://www.brawlhalla.com/legends');
+        if (urls) {
+          let newNamesToAdd: string[] = [];
+      
+          if (fs.existsSync(legendsPath)) {
+            const configFile = fs.readFileSync(legendsPath, { encoding: 'utf-8' });
+            for (let i = 0; i < urls.alts.length; i++) {
+              if (!configFile.includes(urls.alts[i].toLowerCase())) {
+                newNamesToAdd.push(urls.alts[i].toLowerCase());
+              }
+            }
+        
+            if (newNamesToAdd.length > 0) {
+              const jsonToWrite = JSON.stringify(newNamesToAdd, null, 2); // Convert array to JSON string formatted nicely
+              fs.writeFileSync(legendsPath, jsonToWrite, { encoding: 'utf-8' });
+            }
+          }
+          event.reply('response-urls', urls.urls, urls.names, urls.alts);
+        } else {
+          event.reply('response-urls', [], [], []);
+        }
+      } catch {
+        event.reply('response-urls', [], [], []);
+      }
     });
 
     ipcMain.on('request-selected', async (event) => {
       try {
         const reverseFormatCharacterName = (formattedName: string): string => {
           return formattedName.split(' ').map((word, index) => {
-              if (index !== 0) { // Capitalize the first letter of each subsequent word
+              if (index !== 0) {
                   return word.charAt(0).toUpperCase() + word.slice(1);
               }
               return word;
@@ -112,24 +137,10 @@ app.whenReady().then(() => {
     });
     
     ipcMain.on('legend', async (_event, newCharacter: string) => {
-      const formatCharacterName = (name: string): string => {
-        // Transform the string according to the specified rules
-        return name.split('')
-                   .map((char, index) => {
-                       if (index !== 0 && char === char.toUpperCase()) {
-                           return ` ${char.toLowerCase()}`;
-                       }
-                       return char;
-                   })
-                   .join('');
-      };
-
-      const formattedCharacter = formatCharacterName(newCharacter);
-
       try {
         const configFile = fs.readFileSync(configPath, { encoding: 'utf-8' });
         const config = JSON.parse(configFile);
-        config.character = formattedCharacter;
+        config.character = newCharacter.charAt(0).toUpperCase() + newCharacter.slice(1).toLowerCase();;
         const formattedJson = JSON.stringify(config, null, 0)
           .replace(/:/g, ': ')
           .replace(/,/g, ', ');
@@ -170,7 +181,7 @@ app.on('window-all-closed', () => {
   }
 })
 
-const fetchAndProcessHTML = async (url) => {
+const fetchAndProcessHTML = async (url: string) => {
   try {
     const response = await axios.get(url);
     const htmlContent = response.data;
@@ -182,24 +193,32 @@ const fetchAndProcessHTML = async (url) => {
   }
 };
 
-const extractDataSources = (html) => {
+
+const extractDataSources = (html: string): { urls: string[], names: string[], alts: string[] } => {
   const $ = cheerio.load(html);
   const urls: string[] = [];
+  const names: string[] = [];
+  const alts: string[] = [];
   $('img').each((_i, elem) => {
-    const src = $(elem).attr('data-src');
-    if (src && src.includes('Portrait_')) {
-      const pos = src.indexOf('.png');
-      if (pos !== -1) {
-        urls.push(src.substring(0, pos + 4));
-      } else {
+    const parentLink = $(elem).closest('a');
+    const href = parentLink.attr('href');
+    const src = $(elem).attr('src');
+    const alt = $(elem).attr('alt') || '';
+
+    if (href?.startsWith('/legends/')) {
+      if (src) {
         urls.push(src);
+        const name = href.slice('/legends/'.length);
+        names.push(name);
+        alts.push(alt);
       }
     }
   });
-  return urls;
+
+  return { urls, names, alts };
 };
 
-function parseCharacterData(data) {
+function parseCharacterData(data: string) {
   const regex = /<([^>]+) \(lvl: (\d+), xp: (\d+), unlocked: (True|False)\)>/;
   const [, name, level, xp] = regex.exec(data) || [];
   return name ? {

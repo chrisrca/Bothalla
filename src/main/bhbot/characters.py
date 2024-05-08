@@ -1,69 +1,19 @@
 from levels import *
+import os
 
-characters = [
-    "bödvar",
-    "cassidy",
-    "orion",
-    "lord vraxx",
-    "gnash",
-    "queen nai",
-    "hattori",
-    "sir roland",
-    "scarlet",
-    "thatch",
-    "ada",
-    "sentinel",
-    "lucien",
-    "teros",
-    "brynn",
-    "asuri",
-    "barraza",
-    "ember",
-    "azoth",
-    "koji",
-    "ulgrim",
-    "diana",
-    "jhala",
-    "kor",
-    "wu shang",
-    "val",
-    "ragnir",
-    "cross",
-    "mirage",
-    "nix",
-    "mordex",
-    "yumiko",
-    "artemis",
-    "caspian",
-    "sidra",
-    "xull",
-    "kaya",
-    "isaiah",
-    "jiro",
-    "lin fei",
-    "zariel",
-    "rayman",
-    "dusk",
-    "fait",
-    "thor",
-    "petra",
-    "vector",
-    "volkov",
-    "onyx",
-    "jaeyun",
-    "mako",
-    "magyar",
-    "reno",
-    "munin",
-    "arcadia",
-    "ezio",
-    "tezca",
-    "thea",
-    "red raptor",
-    "loki",
-    "seven",
-    "vivi",
-]
+file_path = os.path.join(os.environ['LOCALAPPDATA'], 'BHBot', 'legends.cfg')
+
+characters = []
+try:
+    with open(file_path, 'r', encoding='utf-8') as file:
+        lines = file.readlines() 
+        if lines:
+            lines[0] = lines[0].lstrip('[')
+            lines[-1] = lines[-1].rstrip(']')
+    characters = [line.strip().replace('"', '').rstrip(',') for line in lines if line.strip()]
+    logger.debug("Characters loaded successfully")
+except:
+    logger.debug("An error occurred when loading the legends")
 
 level_character_matrix_width = 15
 level_character_matrix = list(

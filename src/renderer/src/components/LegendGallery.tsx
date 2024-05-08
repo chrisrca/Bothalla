@@ -1,20 +1,24 @@
 import { useEffect, useRef, useState } from 'react';
 import hoverSound from '../../../../resources/hover.mp3';
 import pressSound from '../../../../resources/press.mp3';
+import legendBackground from '../../../../resources/Portrait_Background.png';
 
 interface ButtonProps {
     imageUrls: string[];
+    imageNames: string[];
+    imageAlts: string[];
     currentIndex: number;
 }
 
-function LegendGallery({ imageUrls, currentIndex }: ButtonProps): JSX.Element {
+function LegendGallery({ imageUrls, imageNames, imageAlts, currentIndex }: ButtonProps): JSX.Element {
     const [selectedImage, setSelectedImage] = useState<number | null>(null);
     const audioRefs = useRef<HTMLAudioElement[]>([]);
 
     useEffect(() => {
         if (!selectedImage) {
             const handleReceiveSelected = (_event, selected: string) => {
-                const foundIndex = imageUrls.findIndex(url => url.includes(`Portrait_${selected}.png`));
+                console.log(selected)
+                const foundIndex = imageAlts.findIndex(alt => alt.includes(selected));
                 if (foundIndex !== -1) {
                     setSelectedImage(foundIndex);
                 }
@@ -38,19 +42,14 @@ function LegendGallery({ imageUrls, currentIndex }: ButtonProps): JSX.Element {
         audio.play();
     };
 
-    const extractLegendName = (url: string): string => {
-        const matches = url.match(/Portrait_(.*?)\.png/);
-        return matches ? matches[1] : 'Unknown';
-    };
-
-    const handleMouseDown = (index: number, url: string) => {
+    const handleMouseDown = (index: number) => {
+        console.log(imageAlts[index], imageNames[index]);
         setSelectedImage(index); 
         const audio = new Audio(pressSound);
         audioRefs.current.push(audio);
         audio.play();
         window.addEventListener('mouseup', handleGlobalMouseUp);
-        const legendName = extractLegendName(url);
-        window.electron.ipcRenderer.send('legend', legendName);
+        window.electron.ipcRenderer.send('legend', imageAlts[index]);
     };
 
     const handleGlobalMouseUp = () => {
@@ -63,19 +62,24 @@ function LegendGallery({ imageUrls, currentIndex }: ButtonProps): JSX.Element {
                 {imageUrls.slice(currentIndex * 12 * 3, currentIndex * 12 * 3 + 12 * 3).map((url, index) => {
                     const absoluteIndex = currentIndex * 12 * 3 + index;
                     return (
-                        <img
-                            key={index}
-                            src={url}
-                            alt={`Fetched image ${absoluteIndex + 1}`}
+                        <div key={index} 
+                            className={`image-container ${selectedImage === absoluteIndex ? "selected" : ""}`}
                             onMouseEnter={handleMouseEnter}
-                            onMouseDown={() => handleMouseDown(absoluteIndex, url)}
-                            className={selectedImage === absoluteIndex ? "selected" : ""}
-                        />
+                            onMouseDown={() => handleMouseDown(absoluteIndex)}
+                            >
+                            <img
+                                src={legendBackground}
+                                className="static-image"
+                            />
+                            <img
+                                className="dynamic-image"
+                                src={url}
+                            />
+                        </div>
                     );
                 })}
             </div>
         </>
     );
 }
-
 export default LegendGallery;

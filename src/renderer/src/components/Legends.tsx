@@ -6,13 +6,17 @@ import LegendGallery from './LegendGallery';
 
 function Legends(): JSX.Element {
     const [imageUrls, setImageUrls] = useState<string[]>([]);
+    const [imageNames, setImageNames] = useState<string[]>([]);
+    const [imageAlts, setImageAlts] = useState<string[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [moveRight, setMoveRight] = useState<boolean>(true);
     const [moveLeft, setMoveLeft] = useState<boolean>(true);
 
     useEffect(() => {
-        const handleReceiveUrls = (_event, urls: string[]) => {
+        const handleReceiveUrls = (_event, urls: string[], names: string[], alts: string[]) => {
             setImageUrls(urls);
+            setImageNames(names);
+            setImageAlts(alts);
         };
 
         window.electron.ipcRenderer.send('request-urls');
@@ -54,7 +58,7 @@ function Legends(): JSX.Element {
 
     return (
         <>
-            <LegendGallery imageUrls={imageUrls} currentIndex={currentIndex}/>
+            <LegendGallery imageUrls={imageUrls} imageNames={imageNames} imageAlts={imageAlts} currentIndex={currentIndex}/>
             <RightButton moveRight={setMoveRight} currentIndex={currentIndex} totalGrids={totalGrids}/>
             <LeftButton moveLeft={setMoveLeft} currentIndex={currentIndex}/>
         </>
