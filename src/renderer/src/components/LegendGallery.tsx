@@ -14,7 +14,6 @@ function LegendGallery({ imageUrls, currentIndex }: ButtonProps): JSX.Element {
     useEffect(() => {
         if (!selectedImage) {
             const handleReceiveSelected = (_event, selected: string) => {
-                console.log('Received selected:', selected);
                 const foundIndex = imageUrls.findIndex(url => url.includes(`Portrait_${selected}.png`));
                 if (foundIndex !== -1) {
                     setSelectedImage(foundIndex);

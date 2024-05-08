@@ -51,16 +51,16 @@ def monitor_activity():
             print("No GET /get_logs request received in last 5 seconds, shutting down.")
             if bot_thread and bot_thread.is_alive():
                 bot_queue.put_nowait('STOP')
-            pythoncom.CoInitialize()
-            sessions = AudioUtilities.GetAllSessions()
-            for session in sessions:
-                interface = session.SimpleAudioVolume
-                if session.Process and session.Process.name() == "BrawlhallaGame.exe":
-                    interface.SetMute(0, None)
-                    logger.info(f"Muted BrawlhallaGame.exe")
             brawlhalla = BrawlhallaProcess.find()
             if brawlhalla:
-                brawlhalla.kill()
+                pythoncom.CoInitialize()
+                sessions = AudioUtilities.GetAllSessions()
+                for session in sessions:
+                    interface = session.SimpleAudioVolume
+                    if session.Process and session.Process.name() == "BrawlhallaGame.exe":
+                        brawlhalla.kill()
+                        interface.SetMute(0, None)
+                        logger.info(f"Muted BrawlhallaGame.exe")
             os._exit(0)
         time.sleep(1)
 

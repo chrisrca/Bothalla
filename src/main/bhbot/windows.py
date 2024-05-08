@@ -128,7 +128,6 @@ class BrawlhallaProcess:
     def resize(self):
         window_size = self.get_window_size()
         client_size = self.get_client_size()
-        logger.debug("resize", *window_size, *client_size, *Sg.Window.get_screen_size())
         w_border = window_size[0] - client_size[0]
         h_border = window_size[1] - client_size[1]
         while self.get_client_size() != (
@@ -147,12 +146,11 @@ class BrawlhallaProcess:
 
     def move_off_screen(self):
         logger.debug("move_offscreen")
-        w, h = Sg.Window.get_screen_size()
         win32gui.SetWindowPos(
             self.window,
             0,
-            w * 4,
-            h * 4,
+            1920 * 4,
+            1080 * 4,
             0,
             0,
             win32con.SWP_NOSIZE | win32con.SWP_NOZORDER,

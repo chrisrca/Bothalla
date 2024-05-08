@@ -8,7 +8,6 @@ from datetime import datetime, timedelta
 from math import floor, ceil
 from pathlib import Path
 
-import PySimpleGUI as Sg
 import requests
 
 # noinspection PyProtectedMember
@@ -22,20 +21,10 @@ rfh.close()
 log.removeHandler(rfh)
 
 def get_text(element):
-    if isinstance(element, Sg.Text):
-        return element.get()
-    elif isinstance(element, Sg.Button):
-        return element.get_text()
-    return f"Unsupported element type {type(element)}"
-
+    return f"null"
 
 def set_text(element, value):
-    if isinstance(element, Sg.Text):
-        element.set_size((len(value), 1))
-        element.update(value)
-    if isinstance(element, Sg.Button):
-        element.update(value)
-
+    pass
 
 def my_emit(superclass, record):
     record = copy(record)

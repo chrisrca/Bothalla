@@ -48,9 +48,29 @@ function createWindow(): void {
 app.whenReady().then(() => {
   electronApp.setAppUserModelId('com.electron')
 
+  const defaultConfig = {
+    "character": "Random",
+    "duration": 8,
+    "auto_stop": true,
+    "auto_detect_auto_stop": false,
+    "auto_stop_frequency": 5,
+    "auto_stop_duration": 30,
+    "bots": 2,
+    "mute": false,
+    "stealth": true,
+    "mode_name": "Leveling up one character",
+    "version": "3.5.23"
+  };
+
+  const configPath = join(app.getPath('appData'), '..', 'Local', 'BHBot', 'bhbot.cfg');
   const bhbotPath = join(__dirname, '..', 'src', 'main', 'bhbot').replace(/\\out/g, '').replace(/\\app.asar/g, '');
   const installDepsCommand = `pip install -r ${join(bhbotPath, 'requirements.txt')}`
   
+  if (!fs.existsSync(configPath)) {
+    fs.mkdirSync(join(app.getPath('appData'), '..', 'Local', 'BHBot'), { recursive: true });
+    fs.writeFileSync(configPath, JSON.stringify(defaultConfig), { encoding: 'utf-8' });
+  }
+
   exec(installDepsCommand, { cwd: bhbotPath }, (error, stdout, stderr) => {
     if (error) {
         console.error(`Error installing dependencies: ${error}`);
@@ -73,25 +93,25 @@ app.whenReady().then(() => {
     });
 
     ipcMain.on('request-selected', async (event) => {
-      const configPath = join(app.getPath('appData'), '..', 'Local', 'BHBot', 'bhbot.cfg');
+      try {
+        const reverseFormatCharacterName = (formattedName: string): string => {
+          return formattedName.split(' ').map((word, index) => {
+              if (index !== 0) { // Capitalize the first letter of each subsequent word
+                  return word.charAt(0).toUpperCase() + word.slice(1);
+              }
+              return word;
+          }).join('');
+        };
 
-      const reverseFormatCharacterName = (formattedName: string): string => {
-        return formattedName.split(' ').map((word, index) => {
-            if (index !== 0) { // Capitalize the first letter of each subsequent word
-                return word.charAt(0).toUpperCase() + word.slice(1);
-            }
-            return word;
-        }).join('');
-      };
-
-      const configFile = fs.readFileSync(configPath, { encoding: 'utf-8' });
-      const config = JSON.parse(configFile);
-      event.reply('response-selected', reverseFormatCharacterName(config.character));
+        const configFile = fs.readFileSync(configPath, { encoding: 'utf-8' });
+        const config = JSON.parse(configFile);
+        event.reply('response-selected', reverseFormatCharacterName(config.character));
+      } catch {
+        event.reply('response-selected', "");
+      }
     });
     
     ipcMain.on('legend', async (_event, newCharacter: string) => {
-      const configPath = join(app.getPath('appData'), '..', 'Local', 'BHBot', 'bhbot.cfg');
-      
       const formatCharacterName = (name: string): string => {
         // Transform the string according to the specified rules
         return name.split('')

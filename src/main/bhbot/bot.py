@@ -495,7 +495,9 @@ class BrawlhallaBot:
         xp = self.level_definer.get_xp(self.character.level, True)
         calculated_xp = get_duration_xp(self.duration)
         logger.debug("calc_xp", calculated_xp)
+        logger.info("calc_xp", calculated_xp)
         logger.debug("pixel_xp", xp)
+        logger.info("pixel_xp", xp)
         if self.character.level < 40 and abs(xp - calculated_xp) > calculated_xp / 3:
             logger.info("xp_discrep")
             return False
@@ -537,6 +539,7 @@ class BrawlhallaBot:
     def pick_character(self):
         try:
             logger.info("pick_char", self.mode.next_character)
+            logger.debug(("pick_char: " + str(self.mode.next_character)))
             if self.character != self.mode.next_character:
                 self.execute_steps(
                     *self.character.get_path_to(self.mode.next_character.name)
@@ -635,6 +638,9 @@ class BrawlhallaBot:
         self.total_xp += calc_xp
         self.total_gold += calc_gold
         logger.debug("update_total_stats")
+        # logger.debug(("calc_xp: " + str(calc_xp)))
+        logger.debug(("gold_earned: " + str(calc_gold)))
+        # logger.debug(("gold_for_level_up: " + str(gold_for_level_up)))
         global_settings.update_stats(
             games=1, time=time() - self._time_started, gold=calc_gold, xp=calc_xp
         )

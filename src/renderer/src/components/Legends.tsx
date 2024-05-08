@@ -12,7 +12,6 @@ function Legends(): JSX.Element {
 
     useEffect(() => {
         const handleReceiveUrls = (_event, urls: string[]) => {
-            // console.log('Received URLs:', urls);
             setImageUrls(urls);
         };
 
