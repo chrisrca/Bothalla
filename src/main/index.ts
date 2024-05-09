@@ -27,11 +27,15 @@ function createWindow(): void {
   mainWindow.setResizable(false);
 
   ipcMain.on('minimize-app', () => {
-    mainWindow.minimize();
+    if (mainWindow) {
+      mainWindow.minimize();
+    }
   });
 
   mainWindow.on('ready-to-show', () => {
-    mainWindow.show()
+    if (mainWindow) {
+      mainWindow.show()
+    }
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -231,45 +235,84 @@ function parseCharacterData(data: string) {
 
 
 function fetchLogs() {
+  const reverseFormatCharacterName = (formattedName: string): string => {
+    return formattedName.split(' ').map((word, index) => {
+        if (index !== 0) {
+            return word.charAt(0).toUpperCase() + word.slice(1);
+        }
+        return word;
+    }).join('');
+  };
+
   if (runBot) {
     axios.get('http://127.0.0.1:30000/get_logs')
       .then(response => {
         response.data.forEach((item: string) => {
-          let logMessage = { text: item, color: 'white' };
+          console.log(item)
+          let logMessage = { text: "null", color: 'white' };
           switch (item) {
             case 'waiting_for_bh_window':
               logMessage.text = "Waiting for Brawlhalla to load";
-              logMessage.color = 'yellow';
+              logMessage.color = '#44B4CC';
               break;
             case 'found_bh':
               logMessage.text = "Found Brawlhalla";
-              logMessage.color = 'green';
+              logMessage.color = '#0000FF';
               break;
             case 'move_offscreen':
               logMessage.text = "Hid Brawlhalla";
-              logMessage.color = 'blue';
+              logMessage.color = '#19D1D8';
               break;
             case 'not_in_menu':
               logMessage.text = "Waiting for menu";
-              logMessage.color = 'red';
+              logMessage.color = '#81EC0D';
               break;
             case 'collecting_character_data':
-              logMessage.text = "Reading character levels";
-              logMessage.color = 'orange';
+              logMessage.text = "Loading Character data";
+              logMessage.color = '#FF00FF';
               break;
             case 'initialized':
               logMessage.text = "Character data loaded";
-              logMessage.color = 'purple';
+              logMessage.color = '#FF0000';
+              break;
+            case `{'menu'}`:
+              logMessage.text = "Navigating menu";
+              logMessage.color = '#E5E5E5';
+              break;
+            case `{'lobby', 'menu'}`:
+              logMessage.text = "Navigating lobby menu";
+              logMessage.color = '#FFD93D';
+              break;
+            case `{'settings_open'}`:
+              logMessage.text = "Navigating lobby settings";
+              logMessage.color = '#19D1D8';
+              break;
+            case 'setting_lobby':
+              logMessage.text = "Created lobby";
+              logMessage.color = '#CCFF04';
+              break;
+            case 'loading':
+              logMessage.text = "Loading game";
+              logMessage.color = '#9933CC';
+              break;
+            case 'started_fighting':
+              logMessage.text = "Started fighting";
+              logMessage.color = '#FF6600';
+              break;
+            case 'ended_fighting':
+              logMessage.text = "Ended fighting";
+              logMessage.color = '#FFD93D';
               break;
             default:
               if (item.startsWith("<") && item.endsWith(">")) {
                 const parsedData = parseCharacterData(item);
-                logMessage.text = "Loaded Level for " + parsedData?.name;
-                logMessage.color = 'cyan';
+                if (parsedData) {
+                  logMessage.text = "Loaded " + reverseFormatCharacterName(parsedData?.name);
+                  logMessage.color = 'cyan';
+                }
               }
               break;
           }
-          console.log(logMessage.text)
           if (mainWindow) {
             mainWindow.webContents.send('log-message', logMessage);
           }

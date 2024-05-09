@@ -8,6 +8,7 @@ interface Message {
     id: number;
     text: string;
     color: string;
+    count: number;
 }
 
 function Debug(): JSX.Element {
@@ -17,15 +18,30 @@ function Debug(): JSX.Element {
 
     useEffect(() => {
         const handleNewLog = (_event, logMessage) => {
-            console.log(logMessage.text);
-
-            setMessages(prevMessages => {
-                const newMessages = [...prevMessages, { id: nextId++, text: logMessage.text, color: logMessage.color }];
-                if (newMessages.length > maxMessages) {
-                    return newMessages.slice(1);
-                }
-                return newMessages;
-            });
+            if (logMessage.text != "null") {
+                setMessages(prevMessages => {
+                    let newMessages = [...prevMessages];
+                    if (newMessages.length > 0 && newMessages[newMessages.length - 1].text === logMessage.text) {
+                        // If the last message is the same as the new one, increment the count
+                        newMessages[newMessages.length - 1].count++;
+                    } else {
+                        // Otherwise, add the new message with a count of 1
+                        newMessages.push({ 
+                            id: nextId++, 
+                            text: logMessage.text, 
+                            color: logMessage.color, 
+                            count: 1 
+                        });
+                    }
+            
+                    // Remove the oldest message if we exceed maxMessages
+                    if (newMessages.length > maxMessages) {
+                        newMessages = newMessages.slice(1);
+                    }
+            
+                    return newMessages;
+                });
+            }
         };
 
         window.electron.ipcRenderer.on('log-message', handleNewLog);
@@ -71,7 +87,7 @@ function Debug(): JSX.Element {
                     flexDirection: 'column',
                     alignItems: 'flex-start',
                     justifyContent: 'flex-start',
-                    fontSize: '18px',
+                    fontSize: '16px',
                     textAlign: 'left',
                     paddingTop: 44,
                     paddingLeft: 15,
@@ -86,7 +102,9 @@ function Debug(): JSX.Element {
                 <TransitionGroup component={null}>
                     {messages.map((message) => (
                         <CSSTransition key={message.id} timeout={300} classNames="message">
-                            <p style={{ margin: 0, color: message.color }}>{message.text}</p>
+                            <p style={{ margin: 0, color: message.color }}>
+                                {message.text}{message.count > 1 ? ` (${message.count})` : ''}
+                            </p>
                         </CSSTransition>
                     ))}
                 </TransitionGroup>
