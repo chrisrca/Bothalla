@@ -7,10 +7,11 @@ import cheerio from 'cheerio';
 import fs from 'fs';
 import { exec } from 'child_process';
 
+let mainWindow: BrowserWindow | null = null;
 let runBot = false;
 
 function createWindow(): void {
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 1150,
     height: 690,
     show: false,
@@ -228,41 +229,53 @@ function parseCharacterData(data: string) {
   } : null;
 }
 
+
 function fetchLogs() {
   if (runBot) {
     axios.get('http://127.0.0.1:30000/get_logs')
-    .then(response => {
-      response.data.forEach(item => {
-        switch (item) {
-          case 'waiting_for_bh_window':
-            console.log("Waiting for Brawlhalla to load");
-            break;
-          case 'found_bh':
-            console.log("Found Brawlhalla");
-            break;
-          case 'move_offscreen':
-            console.log("Hid Brawlhalla");
-            break;
-          case 'not_in_menu':
-            console.log("Waiting for menu");
-            break;
-          case 'collecting_character_data':
-            console.log("Reading character levels");
-            break;
-          case 'initialized':
-            console.log("Character data loaded");
-            break;
-          default:
-            if (item.startsWith("<") && item.endsWith(">")) {
-              const parsedData = parseCharacterData(item);
-              console.log("Parsed Character Data: ", parsedData);
-            } else {
-              console.log(item)
-            }
-        }
-      });
-    })
-    .catch(_error => {});
+      .then(response => {
+        response.data.forEach((item: string) => {
+          let logMessage = { text: item, color: 'white' };
+          switch (item) {
+            case 'waiting_for_bh_window':
+              logMessage.text = "Waiting for Brawlhalla to load";
+              logMessage.color = 'yellow';
+              break;
+            case 'found_bh':
+              logMessage.text = "Found Brawlhalla";
+              logMessage.color = 'green';
+              break;
+            case 'move_offscreen':
+              logMessage.text = "Hid Brawlhalla";
+              logMessage.color = 'blue';
+              break;
+            case 'not_in_menu':
+              logMessage.text = "Waiting for menu";
+              logMessage.color = 'red';
+              break;
+            case 'collecting_character_data':
+              logMessage.text = "Reading character levels";
+              logMessage.color = 'orange';
+              break;
+            case 'initialized':
+              logMessage.text = "Character data loaded";
+              logMessage.color = 'purple';
+              break;
+            default:
+              if (item.startsWith("<") && item.endsWith(">")) {
+                const parsedData = parseCharacterData(item);
+                logMessage.text = "Loaded Level for " + parsedData?.name;
+                logMessage.color = 'cyan';
+              }
+              break;
+          }
+          console.log(logMessage.text)
+          if (mainWindow) {
+            mainWindow.webContents.send('log-message', logMessage);
+          }
+        });
+      })
+      .catch(_error => {});
   }
 }
 

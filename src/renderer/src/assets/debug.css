@@ -1,0 +1,30 @@
+@font-face {
+    font-family: 'Brawlhalla';
+    src: url('../assets/Brawlhalla.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+.message-enter {
+    opacity: 0;
+    transform: translateY(100%);
+    transition: opacity 300ms, transform 300ms;
+}
+
+.message-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.message-exit {
+    opacity: 1;
+    transition: opacity 300ms, transform 300ms;
+}
+
+.message-exit-active {
+    opacity: 0;
+    transform: translateY(-100%);
+    position: absolute;
+    width: 100%;
+    transition: opacity 300ms, transform 300ms;
+}

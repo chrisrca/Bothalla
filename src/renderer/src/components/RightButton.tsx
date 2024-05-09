@@ -98,8 +98,8 @@ function RightButton({ moveRight, currentIndex, totalGrids }: ButtonProps): JSX.
             onMouseUp={handleMouseUp}
             style={{ ...buttonStyle, 
                 position: 'absolute', 
-                left: '410px', 
-                top: '20px', 
+                left: '200px', 
+                top: '310px', 
                 width: '46px', 
                 height: '44px', 
                 border: 'none', 
