@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, Tray, Menu } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
@@ -10,15 +10,47 @@ import { exec } from 'child_process';
 let mainWindow: BrowserWindow | null = null;
 let runBot = false;
 
+function trayIcon() {
+  const tray = new Tray(icon);
+
+  tray.on('click', () => {
+    if (mainWindow) {
+      if (mainWindow.isVisible()) {
+        mainWindow.hide();
+      } else {
+        mainWindow.show();
+      }
+    }
+  });
+
+  tray.setToolTip('Bothalla');
+
+  tray.setContextMenu(Menu.buildFromTemplate([
+    {
+      label: 'Show Bothalla', click: function () {
+        if (mainWindow) {
+          mainWindow.show();
+        }
+      }
+    },
+    {
+      label: 'Quit Bothalla', click: function () {
+        app.quit();
+      }
+    }
+  ]));
+}
+
 function createWindow(): void {
   mainWindow = new BrowserWindow({
+    type: 'toolbar',
     width: 1150,
     height: 690,
     show: false,
     frame:false, 
     transparent:true,
     autoHideMenuBar: true,
-    ...(process.platform === 'linux' ? { icon } : {}),
+    ...(process.platform === 'linux' ? { icon } : { icon }),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false
@@ -89,6 +121,7 @@ app.whenReady().then(() => {
     console.log('Dependencies installed:', stdout);
     console.log('Installation errors (if any):', stderr);
 
+    trayIcon()
     createWindow()
 
     // Execute the command to run the Python script
