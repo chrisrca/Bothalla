@@ -15,7 +15,7 @@ function LegendGallery({ imageUrls, imageNames, imageAlts, currentIndex }: Butto
     const audioRefs = useRef<HTMLAudioElement[]>([]);
 
     useEffect(() => {
-        if (!selectedImage) {
+        if (selectedImage === null) {
             const handleReceiveSelected = (_event, selected: string) => {
                 console.log(selected)
                 const foundIndex = imageAlts.findIndex(alt => alt.includes(selected));
@@ -29,12 +29,12 @@ function LegendGallery({ imageUrls, imageNames, imageAlts, currentIndex }: Butto
         }
 
         return () => {
-            if (!selectedImage) { 
+            if (selectedImage === null) { 
                 window.electron.ipcRenderer.removeAllListeners('response-selected');
             }
             window.removeEventListener('mouseup', handleGlobalMouseUp);
         };
-    }, [imageUrls]);
+    }, [imageUrls, selectedImage]);
 
     const handleMouseEnter = () => {
         const audio = new Audio(hoverSound);
@@ -44,12 +44,18 @@ function LegendGallery({ imageUrls, imageNames, imageAlts, currentIndex }: Butto
 
     const handleMouseDown = (index: number) => {
         console.log(imageAlts[index], imageNames[index]);
-        setSelectedImage(index); 
-        const audio = new Audio(pressSound);
-        audioRefs.current.push(audio);
-        audio.play();
+        
+        if (selectedImage === index) {
+            setSelectedImage(null);  // Unselect if already selected
+            window.electron.ipcRenderer.send('legend', 'Random');
+        } else {
+            setSelectedImage(index); 
+            const audio = new Audio(pressSound);
+            audioRefs.current.push(audio);
+            audio.play();
+            window.electron.ipcRenderer.send('legend', imageAlts[index]);
+        }
         window.addEventListener('mouseup', handleGlobalMouseUp);
-        window.electron.ipcRenderer.send('legend', imageAlts[index]);
     };
 
     const handleGlobalMouseUp = () => {
