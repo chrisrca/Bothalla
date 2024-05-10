@@ -7,8 +7,13 @@ import cheerio from 'cheerio';
 import fs from 'fs';
 import { exec } from 'child_process';
 
+const statsPath = join(app.getPath('appData'), '..', 'Local', 'BHBot', 'stats.cfg');
 let mainWindow: BrowserWindow | null = null;
 let runBot = false;
+let stats = {
+  "run_time": 0,
+};
+let lastUpdateTime = Date.now();
 
 function trayIcon() {
   const tray = new Tray(icon);
@@ -111,18 +116,18 @@ app.whenReady().then(() => {
   };
 
   const configPath = join(app.getPath('appData'), '..', 'Local', 'BHBot', 'bhbot.cfg');
-  const legendsPath = join(app.getPath('appData'), '..', 'Local', 'BHBot', 'legends.cfg');
-  const statsPath = join(app.getPath('appData'), '..', 'Local', 'BHBot', 'stats.cfg');
-  
+  const legendsPath = join(app.getPath('appData'), '..', 'Local', 'BHBot', 'legends.cfg');  
   const bhbotPath = join(__dirname, '..', 'src', 'main', 'bhbot').replace(/\\out/g, '').replace(/\\app.asar/g, '');
   const installDepsCommand = `pip install -r ${join(bhbotPath, 'requirements.txt')}`
   
-  if (!fs.existsSync(configPath) || !fs.existsSync(legendsPath)) {
+  if (!fs.existsSync(configPath) || !fs.existsSync(legendsPath) || !fs.existsSync(statsPath)) {
     fs.mkdirSync(join(app.getPath('appData'), '..', 'Local', 'BHBot'), { recursive: true });
     fs.writeFileSync(configPath, JSON.stringify(defaultConfig), { encoding: 'utf-8' });
     fs.writeFileSync(legendsPath, '');
-    fs.writeFileSync(statsPath, '');
+    fs.writeFileSync(statsPath, JSON.stringify(stats), { encoding: 'utf-8' });
   }
+
+  loadStats()
 
   exec(installDepsCommand, { cwd: bhbotPath }, (error, stdout, stderr) => {
     if (error) {
@@ -232,6 +237,11 @@ app.whenReady().then(() => {
     })
   });
 })
+
+app.on('before-quit', () => {
+  updateRunTime();
+  saveStats();
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
@@ -398,3 +408,33 @@ function getProfilePictureAndName() {
         return null;  // Return null if no most recent user is found
     }
 }
+
+function loadStats() {
+  if (fs.existsSync(statsPath)) {
+    const data = fs.readFileSync(statsPath);
+    stats = JSON.parse(data.toString());
+  }
+}
+
+function saveStats() {
+  fs.writeFileSync(statsPath, JSON.stringify(stats, null, 2));
+}
+
+function updateRunTime() {
+  if (runBot) {
+    const currentTime = Date.now();
+    const elapsedTime = currentTime - lastUpdateTime;
+    stats.run_time += elapsedTime;
+    saveStats();
+  }
+  lastUpdateTime = Date.now();
+}
+
+function setRunTime() {
+  if (mainWindow) {
+    mainWindow.webContents.send('time-message', ((stats.run_time / 3600000).toFixed(0)));
+  }
+}
+
+setInterval(setRunTime, 1000);
+setInterval(updateRunTime, 60000);

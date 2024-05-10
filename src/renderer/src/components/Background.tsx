@@ -5,6 +5,7 @@ import nameBar from '../../../../resources/Namebar.png';
 
 function Background(): JSX.Element {
     const [name, setName] = useState("");
+    const [hour, setHour] = useState(0);
 
     const textRef = useRef<HTMLDivElement>(null);
     const [nameWidth, setNameWidth] = useState(0);
@@ -19,10 +20,27 @@ function Background(): JSX.Element {
     }, []);
 
     useEffect(() => {
+        window.electron.ipcRenderer.on('time-message', (_event, time) => {
+            setHour(time); 
+        });
+
+        return () => {
+            window.electron.ipcRenderer.removeAllListeners('time-message');
+        };
+    }, []);
+
+    useEffect(() => {
         if (textRef && textRef.current) {
             setNameWidth(textRef.current.offsetWidth);
         }
     }, [name]);
+
+    // Really not sure why the div's text is right justified and styling
+    // doesnt seem to help so im just gonna do this :)
+    function generateNBSPFromNumber(num: number): string {
+        const numStr = Math.abs(num).toString().replace('.', '');
+        return '&nbsp;&nbsp;'.repeat(4 - numStr.length);
+    }
 
     return (
         <>
@@ -62,6 +80,15 @@ function Background(): JSX.Element {
                 fontSize: '20px',
                 color: 'white',
             }}>{name}</div>
+            <div style={{
+                fontFamily: "'Brawlhalla', sans-serif",
+                position: 'absolute',
+                right: `calc(50% - ${nameWidth - 390}px)`,
+                top: '17px',
+                fontSize: '20px',
+                color: 'white',
+            }} dangerouslySetInnerHTML={{ __html: `${hour}h${generateNBSPFromNumber(hour)}` }}>
+            </div>
         </>
     );
 }
