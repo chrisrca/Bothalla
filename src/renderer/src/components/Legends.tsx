@@ -3,6 +3,7 @@ import '../assets/legends.css';
 import RightButton from './RightButton';
 import LeftButton from './LeftButton';
 import LegendGallery from './LegendGallery';
+import backgroundButtonImage from '../../../../resources/Button_Background.png';
 
 function Legends(): JSX.Element {
     const [imageUrls, setImageUrls] = useState<string[]>([]);
@@ -58,6 +59,16 @@ function Legends(): JSX.Element {
 
     return (
         <>
+            <div style={{
+                backgroundImage: `url(${backgroundButtonImage})`,
+                position: 'absolute',
+                top: '306px',
+                left: '140px',
+                width: '253px',
+                height: '52px',
+                transform: 'scale(0.71)'
+            }}>
+            </div>
             <LegendGallery imageUrls={imageUrls} imageNames={imageNames} imageAlts={imageAlts} currentIndex={currentIndex}/>
             <RightButton moveRight={setMoveRight} currentIndex={currentIndex} totalGrids={totalGrids}/>
             <LeftButton moveLeft={setMoveLeft} currentIndex={currentIndex}/>

@@ -89,12 +89,16 @@ app.whenReady().then(() => {
     console.log('Dependencies installed:', stdout);
     console.log('Installation errors (if any):', stderr);
 
-    console.log(getProfilePictureAndName())
+    createWindow()
 
     // Execute the command to run the Python script
     app.on('browser-window-created', (_, window) => {
       optimizer.watchWindowShortcuts(window)
     })
+
+    ipcMain.on('request-name', async (event) => {
+      event.reply('response-request-name', getProfilePictureAndName());
+    });
   
     ipcMain.on('request-urls', async (event) => {
       try {
