@@ -98,7 +98,7 @@ function createWindow(): void {
   }
 }
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   electronApp.setAppUserModelId('com.electron')
 
   const defaultConfig = {
@@ -119,6 +119,7 @@ app.whenReady().then(() => {
   const legendsPath = join(app.getPath('appData'), '..', 'Local', 'BHBot', 'legends.cfg');  
   const bhbotPath = join(__dirname, '..', 'src', 'main', 'bhbot').replace(/\\out/g, '').replace(/\\app.asar/g, '');
   const installDepsCommand = `pip install -r ${join(bhbotPath, 'requirements.txt')}`
+  const urls = await fetchAndProcessHTML('https://www.brawlhalla.com/legends');
   
   if (!fs.existsSync(configPath) || !fs.existsSync(legendsPath) || !fs.existsSync(statsPath)) {
     fs.mkdirSync(join(app.getPath('appData'), '..', 'Local', 'BHBot'), { recursive: true });
@@ -152,7 +153,6 @@ app.whenReady().then(() => {
   
     ipcMain.on('request-urls', async (event) => {
       try {
-        const urls = await fetchAndProcessHTML('https://www.brawlhalla.com/legends');
         if (urls) {
           let newNamesToAdd: string[] = [];
       
