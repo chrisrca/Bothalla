@@ -175,18 +175,18 @@ app.whenReady().then(() => {
 
     ipcMain.on('request-selected', async (event) => {
       try {
-        const reverseFormatCharacterName = (formattedName: string): string => {
+        const formatSelected = (formattedName: string): string => {
           return formattedName.split(' ').map((word, index) => {
               if (index !== 0) {
                   return word.charAt(0).toUpperCase() + word.slice(1);
               }
               return word;
-          }).join('');
+          }).join(' ');
         };
 
         const configFile = fs.readFileSync(configPath, { encoding: 'utf-8' });
         const config = JSON.parse(configFile);
-        event.reply('response-selected', reverseFormatCharacterName(config.character));
+        event.reply('response-selected', formatSelected(config.character));
       } catch {
         event.reply('response-selected', "");
       }
@@ -370,7 +370,7 @@ function fetchLogs() {
               if (item.startsWith("<") && item.endsWith(">")) {
                 const parsedData = parseCharacterData(item);
                 if (parsedData) {
-                  logMessage.text = "Loaded " + reverseFormatCharacterName(parsedData?.name);
+                  logMessage.text = "Loaded " + reverseFormatCharacterName(parsedData?.name) + ` (lvl: ${parsedData?.level}, xp: ${parsedData?.xp})`;
                   logMessage.color = 'cyan';
                 }
               }
