@@ -450,7 +450,7 @@ class BrawlhallaBot:
         screenshot_path = (
             Path(os.getenv("LOCALAPPDATA")) / "BHBot" / screenshot_name
         )
-        self.brawlhalla.make_screenshot().save(screenshot_path)
+        self.brawlhalla.make_icon(1522, 6, 86, 86).save(screenshot_path)
         self.select_menu_item("meet_the_legends")
         self.execute_steps(self.virtual_input.quick, 0.5, self.sort_by_date)
         logger.info("collecting_character_data")

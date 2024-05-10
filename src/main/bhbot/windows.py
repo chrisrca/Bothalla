@@ -176,6 +176,46 @@ class BrawlhallaProcess:
         self.move_off_screen()
         self.make_transparent()
 
+    def make_icon(self, top_left_x, top_left_y, width, height):
+        import win32ui
+        import win32gui
+        import ctypes
+        from PIL import Image
+
+        w, h = self.get_client_size()
+
+        window_dc = win32gui.GetWindowDC(self.window)
+        mfc_dc = win32ui.CreateDCFromHandle(window_dc)
+        save_dc = mfc_dc.CreateCompatibleDC()
+
+        save_bit_map = win32ui.CreateBitmap()
+        save_bit_map.CreateCompatibleBitmap(mfc_dc, w, h)
+        save_dc.SelectObject(save_bit_map)
+
+        ctypes.windll.user32.PrintWindow(self.window, save_dc.GetSafeHdc(), 1)
+
+        bmpinfo = save_bit_map.GetInfo()
+        bmpstr = save_bit_map.GetBitmapBits(True)
+
+        im = Image.frombuffer(
+            "RGB",
+            (bmpinfo['bmWidth'], bmpinfo['bmHeight']),
+            bmpstr,
+            "raw",
+            "BGRX",
+            0,
+            1
+        )
+
+        im = im.crop((top_left_x, top_left_y, top_left_x + width, top_left_y + height))
+
+        win32gui.DeleteObject(save_bit_map.GetHandle())
+        save_dc.DeleteDC()
+        mfc_dc.DeleteDC()
+        win32gui.ReleaseDC(self.window, window_dc)
+
+        return im
+
     def make_screenshot(self):
         import win32ui
 

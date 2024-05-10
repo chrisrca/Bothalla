@@ -82,11 +82,10 @@ class Settings:
     settings_location = Path(os.getenv("LOCALAPPDATA")) / "BHBot" / "settings.cfg"
     config_location = Path(os.getenv("LOCALAPPDATA")) / "BHBot" / "bhbot.cfg"
     hotkeys_location = Path(os.getenv("LOCALAPPDATA")) / "BHBot" / "hotkeys.cfg"
-    stats_location = Path(os.getenv("LOCALAPPDATA")) / "BHBot" / "stats.json"
 
     def __init__(self, settings):
         self.APP_NAME = "BHBot"
-        self.APP_VERSION = "3.5.23"
+        self.APP_VERSION = "1.0"
         self.APP_CHANGELOGS = {
             "English": [
                 f"Updated to {self.APP_VERSION} \\o/",
@@ -270,7 +269,6 @@ class Settings:
             "settings_location": self.settings_location,
             "config_location": self.config_location,
             "hotkeys_location": self.hotkeys_location,
-            "stats_location": self.stats_location,
         }
         obj = {k: str(v) for k, v in obj.items()}
         json.dump(obj, self.installation_info_location.open("w+"))
@@ -326,12 +324,9 @@ class Settings:
         current = self.get_stats()
         for key in kwargs:
             current[key] = current.get(key, 0) + kwargs[key]
-        json.dump(current, self.stats_location.open("w+"))
 
     def get_stats(self):
-        if not self.stats_location.exists():
-            return {}
-        return json.load(self.stats_location.open("r"))
+        return {}
 
     def __str__(self):
         return self.messages.get(

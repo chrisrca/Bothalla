@@ -64,11 +64,12 @@ app.whenReady().then(() => {
     "mute": false,
     "stealth": true,
     "mode_name": "Leveling up one character",
-    "version": "3.5.23"
+    "version": "1.0"
   };
 
   const configPath = join(app.getPath('appData'), '..', 'Local', 'BHBot', 'bhbot.cfg');
   const legendsPath = join(app.getPath('appData'), '..', 'Local', 'BHBot', 'legends.cfg');
+  const statsPath = join(app.getPath('appData'), '..', 'Local', 'BHBot', 'stats.cfg');
   const bhbotPath = join(__dirname, '..', 'src', 'main', 'bhbot').replace(/\\out/g, '').replace(/\\app.asar/g, '');
   const installDepsCommand = `pip install -r ${join(bhbotPath, 'requirements.txt')}`
   
@@ -76,6 +77,7 @@ app.whenReady().then(() => {
     fs.mkdirSync(join(app.getPath('appData'), '..', 'Local', 'BHBot'), { recursive: true });
     fs.writeFileSync(configPath, JSON.stringify(defaultConfig), { encoding: 'utf-8' });
     fs.writeFileSync(legendsPath, '');
+    fs.writeFileSync(statsPath, '');
   }
 
   exec(installDepsCommand, { cwd: bhbotPath }, (error, stdout, stderr) => {
@@ -87,7 +89,7 @@ app.whenReady().then(() => {
     console.log('Dependencies installed:', stdout);
     console.log('Installation errors (if any):', stderr);
 
-    createWindow()
+    console.log(getProfilePictureAndName())
 
     // Execute the command to run the Python script
     app.on('browser-window-created', (_, window) => {
@@ -158,8 +160,9 @@ app.whenReady().then(() => {
     
       const runPythonScriptCommand = `python ${join(bhbotPath, 'main.pyw')}`;
 
-      if (!runBot) {
+      if (!runBot && mainWindow) {
         runBot = true
+        mainWindow.webContents.send('log-message', { text: "Initializing Bot", color: 'yellow' });
         exec(runPythonScriptCommand, { cwd: bhbotPath }, (error, stdout, stderr) => {
           if (error) {
               console.error(`Error running Python script: ${error}`);
@@ -169,7 +172,8 @@ app.whenReady().then(() => {
           console.log('Python script output:', stdout);
           console.error('Python script errors:', stderr);  
         });
-      } else {
+      } else if (mainWindow) {
+        mainWindow.webContents.send('log-message', { text: "Disabling Bot", color: 'red' });
         runBot = false
       }
     });
@@ -323,3 +327,15 @@ function fetchLogs() {
 }
 
 setInterval(fetchLogs, 100);
+
+function getProfilePictureAndName() {
+  const content = fs.readFileSync("C:\\Program Files (x86)\\Steam\\config\\loginusers.vdf", 'utf8');
+    const regex = /"PersonaName"\s*"([^"]+)"[^{}]*"MostRecent"\s*"1"/s;
+    const match = regex.exec(content);
+
+    if (match) {
+        return match[1];  // Return the PersonaName of the most recent user
+    } else {
+        return null;  // Return null if no most recent user is found
+    }
+}
