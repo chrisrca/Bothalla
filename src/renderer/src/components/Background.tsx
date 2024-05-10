@@ -31,7 +31,11 @@ function Background(): JSX.Element {
 
     useEffect(() => {
         if (textRef && textRef.current) {
-            setNameWidth(textRef.current.offsetWidth);
+            if (textRef.current.offsetWidth < 34) {
+                setNameWidth(34)
+            } else {
+                setNameWidth(textRef.current.offsetWidth);
+            }
         }
     }, [name]);
 
