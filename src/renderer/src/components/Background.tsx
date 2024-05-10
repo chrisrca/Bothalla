@@ -38,7 +38,7 @@ function Background(): JSX.Element {
     // Really not sure why the div's text is right justified and styling
     // doesnt seem to help so im just gonna do this :)
     function generateNBSPFromNumber(num: number): string {
-        const numStr = Math.abs(num).toString().replace('.', '');
+        const numStr = Math.abs(num).toString().replace('.', ''); // Should never have decimals but just in case
         return '&nbsp;&nbsp;'.repeat(4 - numStr.length);
     }
 
