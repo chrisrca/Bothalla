@@ -66,6 +66,17 @@ function createWindow(): void {
 
   mainWindow.on('ready-to-show', () => {
     if (mainWindow) {
+      const iconPath = join(app.getPath('appData'), '..', 'Local', 'BHBot', 'icon.png');
+      fs.readFile(iconPath, (error, data) => {
+        if (error) {
+            console.error('Failed to read icon file:', error);
+            return;
+        } else {
+          const iconBase64 = `data:image/png;base64,${data.toString('base64')}`;
+          mainWindow!.webContents.send('icon', iconBase64);
+        }
+        mainWindow!.show();
+      });
       mainWindow.show()
     }
   })
@@ -102,6 +113,7 @@ app.whenReady().then(() => {
   const configPath = join(app.getPath('appData'), '..', 'Local', 'BHBot', 'bhbot.cfg');
   const legendsPath = join(app.getPath('appData'), '..', 'Local', 'BHBot', 'legends.cfg');
   const statsPath = join(app.getPath('appData'), '..', 'Local', 'BHBot', 'stats.cfg');
+  
   const bhbotPath = join(__dirname, '..', 'src', 'main', 'bhbot').replace(/\\out/g, '').replace(/\\app.asar/g, '');
   const installDepsCommand = `pip install -r ${join(bhbotPath, 'requirements.txt')}`
   
@@ -309,6 +321,16 @@ function fetchLogs() {
               logMessage.color = '#81EC0D';
               break;
             case 'collecting_character_data':
+              const iconPath = join(app.getPath('appData'), '..', 'Local', 'BHBot', 'icon.png');
+              fs.readFile(iconPath, (error, data) => {
+                if (error) {
+                    console.error('Failed to read icon file:', error);
+                    return;
+                }
+                const iconBase64 = `data:image/png;base64,${data.toString('base64')}`;
+                mainWindow!.show();
+                mainWindow!.webContents.send('icon', iconBase64);
+              });
               logMessage.text = "Loading Character data";
               logMessage.color = '#FF00FF';
               break;
