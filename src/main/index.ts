@@ -128,6 +128,17 @@ app.whenReady().then(async () => {
     fs.writeFileSync(statsPath, JSON.stringify(stats), { encoding: 'utf-8' });
   }
 
+  try {
+    const configFile = fs.readFileSync(configPath, { encoding: 'utf-8' });
+    const config = JSON.parse(configFile);
+    config.mode_name = "Leveling up one character";
+    const formattedJson = JSON.stringify(config, null, 0)
+      .replace(/:/g, ': ')
+      .replace(/,/g, ', ');
+
+      fs.writeFileSync(configPath, formattedJson, { encoding: 'utf-8' });
+  } catch {}
+
   loadStats()
 
   exec(installDepsCommand, { cwd: bhbotPath }, (error, stdout, stderr) => {
@@ -202,6 +213,19 @@ app.whenReady().then(async () => {
         const configFile = fs.readFileSync(configPath, { encoding: 'utf-8' });
         const config = JSON.parse(configFile);
         config.character = newCharacter.charAt(0).toUpperCase() + newCharacter.slice(1).toLowerCase();;
+        const formattedJson = JSON.stringify(config, null, 0)
+          .replace(/:/g, ': ')
+          .replace(/,/g, ', ');
+
+          fs.writeFileSync(configPath, formattedJson, { encoding: 'utf-8' });
+      } catch {}
+    });
+
+    ipcMain.on('mode', async (_event, mode: string) => {
+      try {
+        const configFile = fs.readFileSync(configPath, { encoding: 'utf-8' });
+        const config = JSON.parse(configFile);
+        config.mode_name = mode;
         const formattedJson = JSON.stringify(config, null, 0)
           .replace(/:/g, ': ')
           .replace(/,/g, ', ');

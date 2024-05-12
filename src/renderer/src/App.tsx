@@ -5,6 +5,7 @@ import RunButton from './components/RunButton';
 import Debug from './components/Debug';
 import Background from './components/Background';
 import UserIcon from './components/UserIcon';
+import ModeButton from './components/ModeButton';
 
 function App(): JSX.Element {
   return (
@@ -14,6 +15,7 @@ function App(): JSX.Element {
       <CloseButton></CloseButton>
       <Legends></Legends>
       <RunButton></RunButton>
+      <ModeButton></ModeButton>
       <Debug></Debug>
       <UserIcon></UserIcon>
     </div>
