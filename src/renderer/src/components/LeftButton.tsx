@@ -99,7 +99,7 @@ function LeftButton({ moveLeft, currentIndex, }: ButtonProps): JSX.Element {
             onMouseUp={handleMouseUp}
             style={{ ...buttonStyle, 
                 position: 'absolute', 
-                left: '172px', 
+                left: '174px', 
                 top: '310px', 
                 width: '46px', 
                 height: '44px', 

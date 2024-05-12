@@ -58,7 +58,7 @@ function Debug(): JSX.Element {
                     zIndex: '999',
                     backgroundImage: `url(${debugTop})`,
                     position: 'absolute',
-                    right: '35px',
+                    right: '33px',
                     top: '313px',
                     width: '371px',
                     height: '330px',
@@ -78,7 +78,7 @@ function Debug(): JSX.Element {
                 style={{
                     backgroundImage: `url(${debug})`,
                     position: 'absolute',
-                    right: '35px',
+                    right: '33px',
                     top: '313px',
                     width: '371px',
                     height: '330px',
@@ -109,6 +109,16 @@ function Debug(): JSX.Element {
                     ))}
                 </TransitionGroup>
             </div>
+            <div style={{
+                zIndex: '1000',
+                position: 'absolute',
+                fontSize: '22px',
+                textAlign: 'left',
+                color: '#6ec8d3',
+                left: '762px',
+                top: '325px',
+                fontFamily: "'Brawlhalla', sans-serif",
+            }}>Console</div>
         </>
     );
 }

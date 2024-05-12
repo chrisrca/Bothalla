@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import hoverSound from '../../../../resources/hover.mp3';
 import pressSound from '../../../../resources/press.mp3';
 import legendBackground from '../../../../resources/Portrait_Background.png';
+import statsBackground from '../../../../resources/Stats.png';
 
 interface ButtonProps {
     imageUrls: string[];
@@ -85,6 +86,24 @@ function LegendGallery({ imageUrls, imageNames, imageAlts, currentIndex }: Butto
                     );
                 })}
             </div>
+            <div style={{
+                backgroundImage: `url(${statsBackground})`,
+                position: 'absolute',
+                top: '300px',
+                left: '64px',
+                width: '775px',
+                height: '401px',
+                transform: 'scale(0.71)'
+            }}></div>
+            {selectedImage && <div style={{
+                position: 'absolute',
+                fontSize: '22px',
+                textAlign: 'left',
+                color: '#6ec8d3',
+                left: '193px',
+                top: '370px',
+                fontFamily: "'Brawlhalla', sans-serif",
+            }}>{imageAlts[selectedImage]}</div>}
         </>
     );
 }

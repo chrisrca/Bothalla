@@ -19,12 +19,13 @@ function UserIcon(): JSX.Element {
             src={userIcon} 
             style={{
                 position: 'absolute',
-                left: '20px',
-                bottom: '20px',
+                left: '42px',
+                bottom: '42px',
                 width: '84px',
                 height: '84px',
                 borderRadius: '18px',
-                userSelect: 'none'
+                userSelect: 'none',
+                transform: 'scale(1.5)'
             }} 
             />
             {img && <img 
@@ -32,12 +33,13 @@ function UserIcon(): JSX.Element {
             src={img} 
             style={{
                 position: 'absolute',
-                left: '20px',
-                bottom: '20px',
+                left: '42px',
+                bottom: '42px',
                 width: '84px',
                 height: '84px',
                 borderRadius: '18px',
-                userSelect: 'none'
+                userSelect: 'none',
+                transform: 'scale(1.5)'
             }} 
             />}
         </>

@@ -63,7 +63,7 @@ function Legends(): JSX.Element {
                 backgroundImage: `url(${backgroundButtonImage})`,
                 position: 'absolute',
                 top: '306px',
-                left: '140px',
+                left: '142px',
                 width: '253px',
                 height: '52px',
                 transform: 'scale(0.71)'
