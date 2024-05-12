@@ -13,19 +13,19 @@ function Mode({ index }): JSX.Element {
             <div style={{
                 backgroundImage: `url(${modeBackground})`,
                 position: 'absolute',
-                top: '20px',
-                right: '-30px',
+                top: '306px',
+                left: '298px',
                 width: '500px',
                 height: '52px',
-                transform: 'scale(0.7342)'
+                transform: 'scale(0.71)'
             }}></div>
             <div style={{
                 position: 'absolute',
                 fontSize: '16px',
                 textAlign: 'left',
                 color: 'white',
-                left: '760px',
-                top: '36px',
+                left: '384px',
+                top: '322px',
                 fontFamily: "'Brawlhalla', sans-serif",
             }}>Mode: {modeNames[index]}</div>
         </>

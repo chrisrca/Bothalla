@@ -72,6 +72,15 @@ function Legends(): JSX.Element {
             <LegendGallery imageUrls={imageUrls} imageNames={imageNames} imageAlts={imageAlts} currentIndex={currentIndex}/>
             <RightButton moveRight={setMoveRight} currentIndex={currentIndex} totalGrids={totalGrids}/>
             <LeftButton moveLeft={setMoveLeft} currentIndex={currentIndex}/>
+            <div style={{
+                position: 'absolute',
+                fontSize: '16px',
+                textAlign: 'left',
+                color: 'white',
+                left: '244px',
+                top: '322px',
+                fontFamily: "'Brawlhalla', sans-serif",
+            }}>{`${currentIndex + 1}/${totalGrids}`}</div>
         </>
     );
 }
