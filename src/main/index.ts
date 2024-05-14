@@ -11,6 +11,7 @@ const statsPath = join(app.getPath('appData'), '..', 'Local', 'BHBot', 'stats.cf
 const legendStatsPath = join(app.getPath('appData'), '..', 'Local', 'BHBot', 'legendStats.cfg');
 let mainWindow: BrowserWindow | null = null;
 let runBot = false;
+let selectedLegend;
 let stats = {
   "run_time": 0,
 };
@@ -80,7 +81,7 @@ function createWindow(width = 250, height = 182.75) {
       const iconPath = join(app.getPath('appData'), '..', 'Local', 'BHBot', 'icon.png');
       fs.readFile(iconPath, (error, data) => {
         if (error) {
-          console.error('Failed to read icon file:', error);
+          mainWindow!.show();
           return;
         }
         const iconBase64 = `data:image/png;base64,${data.toString('base64')}`;
@@ -156,14 +157,14 @@ app.whenReady().then(async () => {
 
   loadStats()
 
-  exec(installDepsCommand, { cwd: bhbotPath }, (error, stdout, stderr) => {
+  exec(installDepsCommand, { cwd: bhbotPath }, (error) => {
     if (error) {
-        console.error(`Error installing dependencies: ${error}`);
-        console.error(stderr);  // This will print the error output from pip
+        if (mainWindow) { 
+          mainWindow.webContents.send('log-message', { text: "Error Installing python dependencies.", color: 'red' });
+          mainWindow.webContents.send('log-message', { text: "Please make sure Python 3.11.5 is installed.", color: 'red' });
+        }
         return;
     }
-    console.log('Dependencies installed:', stdout);
-    console.log('Installation errors (if any):', stderr);
     let intervalId;
     if (mainWindow) {
       mainWindow.destroy();
@@ -174,7 +175,7 @@ app.whenReady().then(async () => {
           const iconPath = join(app.getPath('appData'), '..', 'Local', 'BHBot', 'icon.png');
           fs.readFile(iconPath, (error, data) => {
             if (error) {
-                console.error('Failed to read icon file:', error);
+                mainWindow!.show();
                 return;
             }
             const iconBase64 = `data:image/png;base64,${data.toString('base64')}`;
@@ -187,7 +188,6 @@ app.whenReady().then(async () => {
       createWindow(1150, 690);
     }
 
-    // Execute the command to run the Python script
     app.on('browser-window-created', (_, window) => {
       optimizer.watchWindowShortcuts(window)
     })
@@ -238,6 +238,7 @@ app.whenReady().then(async () => {
 
         const configFile = fs.readFileSync(configPath, { encoding: 'utf-8' });
         const config = JSON.parse(configFile);
+        selectedLegend = config.character
         event.reply('response-selected', formatSelected(config.character));
       } catch {
         event.reply('response-selected', "");
@@ -249,6 +250,7 @@ app.whenReady().then(async () => {
         const configFile = fs.readFileSync(configPath, { encoding: 'utf-8' });
         const config = JSON.parse(configFile);
         config.character = newCharacter.charAt(0).toUpperCase() + newCharacter.slice(1).toLowerCase();;
+        selectedLegend = config.character
         const formattedJson = JSON.stringify(config, null, 0)
           .replace(/:/g, ': ')
           .replace(/,/g, ', ');
@@ -277,14 +279,11 @@ app.whenReady().then(async () => {
       if (!runBot && mainWindow) {
         runBot = true
         mainWindow.webContents.send('log-message', { text: "Initializing Bot", color: 'yellow' });
-        exec(runPythonScriptCommand, { cwd: bhbotPath }, (error, stdout, stderr) => {
+        exec(runPythonScriptCommand, { cwd: bhbotPath }, (error) => {
           if (error) {
-              console.error(`Error running Python script: ${error}`);
-              console.error(stderr);  // Print errors from Python script execution
+              runBot = false
               return;
           }
-          console.log('Python script output:', stdout);
-          console.error('Python script errors:', stderr);  
         });
       } else if (mainWindow) {
         mainWindow.webContents.send('log-message', { text: "Disabling Bot", color: 'red' });
@@ -338,7 +337,6 @@ function fetchLogs() {
     axios.get('http://127.0.0.1:30000/get_logs')
       .then(response => {
         response.data.forEach((item: string) => {
-          // console.log(item)
           let logMessage = { text: "null", color: 'white' };
           switch (item) {
             case 'waiting_for_bh_window':
@@ -361,7 +359,6 @@ function fetchLogs() {
               const iconPath = join(app.getPath('appData'), '..', 'Local', 'BHBot', 'icon.png');
               fs.readFile(iconPath, (error, data) => {
                 if (error) {
-                    console.error('Failed to read icon file:', error);
                     return;
                 }
                 const iconBase64 = `data:image/png;base64,${data.toString('base64')}`;
@@ -375,7 +372,6 @@ function fetchLogs() {
               legendStats = legendStatsTemp;
               legendStatsTemp = [];
               fs.writeFileSync(legendStatsPath, JSON.stringify(legendStats), { encoding: 'utf-8' });
-              console.log(legendStats)
               logMessage.text = "Character data loaded";
               logMessage.color = '#FF0000';
               break;
@@ -423,7 +419,22 @@ function fetchLogs() {
                     logMessage.color = 'cyan';
                 }
               } else if (item.includes("pick_char")) {
-                  console.log(item);
+                  const regex = /<(.+?) \(lvl: (\d+), xp: (\d+), unlocked: (True|False)\)>/;
+                  const matches = item.match(regex);
+                  if (matches) {
+                    const name = matches[1];
+                    const level = parseInt(matches[2], 10);
+                    const xp = parseInt(matches[3], 10);
+
+                    // Update stats here
+
+                    if (selectedLegend == "Random") {
+                      logMessage.text = "Picked Random";
+                    } else {
+                      logMessage.text = "Picked " + name + ` (lvl: ${level}, xp: ${xp})`;
+                    }
+                    logMessage.color = 'green';
+                  }
               }
               break;
           }
@@ -444,9 +455,9 @@ function getProfilePictureAndName() {
     const match = regex.exec(content);
 
     if (match) {
-        return match[1];  // Return the PersonaName of the most recent user
+        return match[1];
     } else {
-        return null;  // Return null if no most recent user is found
+        return null;
     }
 }
 
@@ -494,7 +505,9 @@ function updateRunTime() {
 function setRunTime() {
   if (mainWindow) {
     mainWindow.webContents.send('time-message', ((stats.run_time / 3600000).toFixed(0)));
-    mainWindow.webContents.send('legend-stats', (legendStats));
+    if (legendStats.length != 0) {
+      mainWindow.webContents.send('legend-stats', (legendStats));
+    }
   }
 }
 
@@ -552,7 +565,6 @@ const fetchAndProcessHTML = async (url: string) => {
     const data = await extractDataSources(htmlContent);
     return data;
   } catch (error) {
-    console.error('Error fetching HTML content:', error);
     return null;
   }
 };

@@ -5,7 +5,7 @@ function UserIcon(): JSX.Element {
     const [img, setImg] = useState("")
 
     useEffect(() => {
-        window.electron.ipcRenderer.on('icon', (_event, image) => {setImg(image); console.log(image)});
+        window.electron.ipcRenderer.on('icon', (_event, image) => {setImg(image);});
 
         return () => {
             window.electron.ipcRenderer.removeAllListeners('icon');
@@ -28,7 +28,7 @@ function UserIcon(): JSX.Element {
                 transform: 'scale(1.5)'
             }} 
             />
-            {img && <img 
+            {img != "" && <img 
             className='usericon'
             src={img} 
             style={{

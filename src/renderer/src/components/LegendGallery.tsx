@@ -36,8 +36,9 @@ function LegendGallery({ imageUrls, imageAlts, poseUrls, currentIndex }: ButtonP
 
     useEffect(() => {
         window.electron.ipcRenderer.on('legend-stats', (_event, stats) => {
-            setStats(stats); 
-            console.log(selectedImage)
+            if (stats != null) {
+                setStats(stats); 
+            }
         });
 
         return () => {
@@ -161,6 +162,60 @@ function LegendGallery({ imageUrls, imageAlts, poseUrls, currentIndex }: ButtonP
                 height: `300px`,
                 transform: 'translateX(-50%) scale(0.71)'
             }}></img>}
+            {!stats && <div style={{
+                position: 'absolute',
+                fontSize: '19px',
+                textAlign: 'left',
+                color: '#6ec8d3',
+                left: '204px',
+                top: '430px',
+                fontFamily: "'Brawlhalla', sans-serif",
+            }}>{`Level: 0`}</div>}
+            {!stats && <div style={{
+                position: 'absolute',
+                fontSize: '19px',
+                textAlign: 'left',
+                color: '#6ec8d3',
+                left: '204px',
+                top: '470px',
+                fontFamily: "'Brawlhalla', sans-serif",
+            }}>{`XP: 0`}</div>}
+            {!stats && <div style={{
+                position: 'absolute',
+                fontSize: '19px',
+                textAlign: 'left',
+                color: '#6ec8d3',
+                left: '204px',
+                top: '510px',
+                fontFamily: "'Brawlhalla', sans-serif",
+            }}>{`Time: 0h`}</div>}
+            {selectedImage === null && <div style={{
+                position: 'absolute',
+                fontSize: '22px',
+                textAlign: 'left',
+                color: '#6ec8d3',
+                left: '193px',
+                top: '370px',
+                fontFamily: "'Brawlhalla', sans-serif",
+            }}>{"Random"}</div>}
+            {stats && selectedImage === null && <div style={{
+                position: 'absolute',
+                fontSize: '19px',
+                textAlign: 'left',
+                color: '#6ec8d3',
+                left: '204px',
+                top: '430px',
+                fontFamily: "'Brawlhalla', sans-serif",
+            }}>{`Level: ${stats.reduce((sum, item) => sum + item.level, 0)}`}</div>}
+            {stats && selectedImage === null && <div style={{
+                position: 'absolute',
+                fontSize: '19px',
+                textAlign: 'left',
+                color: '#6ec8d3',
+                left: '204px',
+                top: '470px',
+                fontFamily: "'Brawlhalla', sans-serif",
+            }}>{`Total Time: ${((stats.reduce((sum, item) => sum + item.playtime, 0)) / 3600000).toFixed(0)}h`}</div>}
         </>
     );
 }

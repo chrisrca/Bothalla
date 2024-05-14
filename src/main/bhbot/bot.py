@@ -538,7 +538,6 @@ class BrawlhallaBot:
 
     def pick_character(self):
         try:
-            logger.info("pick_char", self.mode.next_character)
             logger.debug(("pick_char: " + str(self.mode.next_character)))
             if self.character != self.mode.next_character:
                 self.execute_steps(
@@ -546,7 +545,7 @@ class BrawlhallaBot:
                 )
                 self.character = self.mode.next_character
         except:
-            logger.info("locked_character")
+            logger.debug(("pick_char: " + str(self.character)))
 
     def set_duration(self):
         logger.info("setting_dur", self.mode.next_duration)
