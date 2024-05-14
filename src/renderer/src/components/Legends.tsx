@@ -7,17 +7,17 @@ import backgroundButtonImage from '../../../../resources/Button_Background.png';
 
 function Legends(): JSX.Element {
     const [imageUrls, setImageUrls] = useState<string[]>([]);
-    const [imageNames, setImageNames] = useState<string[]>([]);
     const [imageAlts, setImageAlts] = useState<string[]>([]);
+    const [poseUrls, setPoseUrls] = useState<string[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [moveRight, setMoveRight] = useState<boolean>(true);
     const [moveLeft, setMoveLeft] = useState<boolean>(true);
 
     useEffect(() => {
-        const handleReceiveUrls = (_event, urls: string[], names: string[], alts: string[]) => {
+        const handleReceiveUrls = (_event, urls: string[], alts: string[], imgs: string[]) => {
             setImageUrls(urls);
-            setImageNames(names);
             setImageAlts(alts);
+            setPoseUrls(imgs);
         };
 
         window.electron.ipcRenderer.send('request-urls');
@@ -69,7 +69,7 @@ function Legends(): JSX.Element {
                 transform: 'scale(0.71)'
             }}>
             </div>
-            <LegendGallery imageUrls={imageUrls} imageNames={imageNames} imageAlts={imageAlts} currentIndex={currentIndex}/>
+            <LegendGallery imageUrls={imageUrls} imageAlts={imageAlts} poseUrls={poseUrls} currentIndex={currentIndex}/>
             <RightButton moveRight={setMoveRight} currentIndex={currentIndex} totalGrids={totalGrids}/>
             <LeftButton moveLeft={setMoveLeft} currentIndex={currentIndex}/>
             <div style={{

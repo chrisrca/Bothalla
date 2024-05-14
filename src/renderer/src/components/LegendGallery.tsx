@@ -6,36 +6,62 @@ import statsBackground from '../../../../resources/Stats.png';
 
 interface ButtonProps {
     imageUrls: string[];
-    imageNames: string[];
     imageAlts: string[];
+    poseUrls: string[];
     currentIndex: number;
 }
 
-function LegendGallery({ imageUrls, imageNames, imageAlts, currentIndex }: ButtonProps): JSX.Element {
+interface LegendStats {
+    name: string;
+    level: number;
+    xp: number;
+    playtime: number;
+}
+
+function LegendGallery({ imageUrls, imageAlts, poseUrls, currentIndex }: ButtonProps): JSX.Element {
     const [selectedImage, setSelectedImage] = useState<number | null>(null);
+    const [stats, setStats] = useState<LegendStats[]>();
     const audioRefs = useRef<HTMLAudioElement[]>([]);
 
     useEffect(() => {
-        if (selectedImage === null) {
-            const handleReceiveSelected = (_event, selected: string) => {
-                console.log(selected)
-                const foundIndex = imageAlts.findIndex(alt => alt.includes(selected));
-                if (foundIndex !== -1) {
-                    setSelectedImage(foundIndex);
-                }
-            };
+        imageUrls.forEach(url => {
+            const img = new Image();
+            img.src = url;
+        });
+        poseUrls.forEach(url => {
+            const img = new Image();
+            img.src = url;
+        });
+    }, [imageUrls, poseUrls]);
+
+    useEffect(() => {
+        window.electron.ipcRenderer.on('legend-stats', (_event, stats) => {
+            setStats(stats); 
+            console.log(selectedImage)
+        });
+
+        return () => {
+            window.electron.ipcRenderer.removeAllListeners('legend-stats');
+        };
+    }, []);
+
+    useEffect(() => {
+        const handleReceiveSelected = (_event, selected: string) => {
+            const foundIndex = imageAlts.findIndex(alt => alt.includes(selected));
+            if (foundIndex !== -1) {
+                setSelectedImage(foundIndex);
+            }
+        };
     
+        if (selectedImage === null) {
             window.electron.ipcRenderer.send('request-selected');
             window.electron.ipcRenderer.on('response-selected', handleReceiveSelected);
         }
-
+    
         return () => {
-            if (selectedImage === null) { 
-                window.electron.ipcRenderer.removeAllListeners('response-selected');
-            }
-            window.removeEventListener('mouseup', handleGlobalMouseUp);
+            window.electron.ipcRenderer.removeAllListeners('response-selected');
         };
-    }, [imageUrls, selectedImage]);
+    }, [imageUrls, selectedImage, imageAlts]);
 
     const handleMouseEnter = () => {
         const audio = new Audio(hoverSound);
@@ -44,19 +70,16 @@ function LegendGallery({ imageUrls, imageNames, imageAlts, currentIndex }: Butto
     };
 
     const handleMouseDown = (index: number) => {
-        console.log(imageAlts[index], imageNames[index]);
-        
         if (selectedImage === index) {
-            setSelectedImage(null);  // Unselect if already selected
+            setSelectedImage(null);
             window.electron.ipcRenderer.send('legend', 'Random');
         } else {
-            setSelectedImage(index); 
+            setSelectedImage(index);
             const audio = new Audio(pressSound);
             audioRefs.current.push(audio);
             audio.play();
             window.electron.ipcRenderer.send('legend', imageAlts[index]);
         }
-        window.addEventListener('mouseup', handleGlobalMouseUp);
     };
 
     const handleGlobalMouseUp = () => {
@@ -69,11 +92,11 @@ function LegendGallery({ imageUrls, imageNames, imageAlts, currentIndex }: Butto
                 {imageUrls.slice(currentIndex * 12 * 3, currentIndex * 12 * 3 + 12 * 3).map((url, index) => {
                     const absoluteIndex = currentIndex * 12 * 3 + index;
                     return (
-                        <div key={index} 
-                            className={`image-container ${selectedImage === absoluteIndex ? "selected" : ""}`}
-                            onMouseEnter={handleMouseEnter}
-                            onMouseDown={() => handleMouseDown(absoluteIndex)}
-                            >
+                        <div key={index}
+                             className={`image-container ${selectedImage === absoluteIndex ? "selected" : ""}`}
+                             onMouseEnter={handleMouseEnter}
+                             onMouseDown={() => handleMouseDown(absoluteIndex)}
+                             >
                             <img
                                 src={legendBackground}
                                 className="static-image"
@@ -95,7 +118,7 @@ function LegendGallery({ imageUrls, imageNames, imageAlts, currentIndex }: Butto
                 height: '401px',
                 transform: 'scale(0.71)'
             }}></div>
-            {selectedImage && <div style={{
+            {selectedImage !== null && <div style={{
                 position: 'absolute',
                 fontSize: '22px',
                 textAlign: 'left',
@@ -104,7 +127,42 @@ function LegendGallery({ imageUrls, imageNames, imageAlts, currentIndex }: Butto
                 top: '370px',
                 fontFamily: "'Brawlhalla', sans-serif",
             }}>{imageAlts[selectedImage]}</div>}
+            {stats && selectedImage !== null && <div style={{
+                position: 'absolute',
+                fontSize: '19px',
+                textAlign: 'left',
+                color: '#6ec8d3',
+                left: '204px',
+                top: '430px',
+                fontFamily: "'Brawlhalla', sans-serif",
+            }}>{`Level: ${(stats[selectedImage].level)}`}</div>}
+            {stats && selectedImage !== null && <div style={{
+                position: 'absolute',
+                fontSize: '19px',
+                textAlign: 'left',
+                color: '#6ec8d3',
+                left: '204px',
+                top: '470px',
+                fontFamily: "'Brawlhalla', sans-serif",
+            }}>{`XP: ${(stats[selectedImage].xp)}`}</div>}
+            {stats && selectedImage !== null && <div style={{
+                position: 'absolute',
+                fontSize: '19px',
+                textAlign: 'left',
+                color: '#6ec8d3',
+                left: '204px',
+                top: '510px',
+                fontFamily: "'Brawlhalla', sans-serif",
+            }}>{`Time: ${(stats[selectedImage].playtime / 3600000).toFixed(0)}h`}</div>}
+            {selectedImage !== null && <img src={`${poseUrls[selectedImage]}`} style={{
+                position: 'absolute',
+                bottom: '24px',
+                left: '560px',
+                height: `300px`,
+                transform: 'translateX(-50%) scale(0.71)'
+            }}></img>}
         </>
     );
 }
+
 export default LegendGallery;

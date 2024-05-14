@@ -638,7 +638,7 @@ class BrawlhallaBot:
         self.total_xp += calc_xp
         self.total_gold += calc_gold
         logger.debug("update_total_stats")
-        # logger.debug(("calc_xp: " + str(calc_xp)))
+        logger.debug(("calc_xp: " + str(calc_xp)))
         logger.debug(("gold_earned: " + str(calc_gold)))
         # logger.debug(("gold_for_level_up: " + str(gold_for_level_up)))
         global_settings.update_stats(

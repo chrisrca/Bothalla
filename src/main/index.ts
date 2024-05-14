@@ -8,12 +8,24 @@ import fs from 'fs';
 import { exec } from 'child_process';
 
 const statsPath = join(app.getPath('appData'), '..', 'Local', 'BHBot', 'stats.cfg');
+const legendStatsPath = join(app.getPath('appData'), '..', 'Local', 'BHBot', 'legendStats.cfg');
 let mainWindow: BrowserWindow | null = null;
 let runBot = false;
 let stats = {
   "run_time": 0,
 };
+
 let lastUpdateTime = Date.now();
+
+interface LegendStats {
+  name: string;
+  level: number;
+  xp: number;
+  playtime: number;
+}
+
+let legendStatsTemp: LegendStats[] = [];
+let legendStats: LegendStats[] = [];
 
 function trayIcon() {
   const tray = new Tray(icon);
@@ -46,60 +58,57 @@ function trayIcon() {
   ]));
 }
 
-function createWindow(): void {
+function createWindow(width = 250, height = 182.75) {
   mainWindow = new BrowserWindow({
     type: 'toolbar',
-    width: 1150,
-    height: 690,
+    width: width,
+    height: height,
     show: false,
-    frame:false, 
-    transparent:true,
+    frame: false,
+    transparent: true,
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : { icon }),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false
     }
-  })
-  mainWindow.setResizable(false);
-
-  ipcMain.on('minimize-app', () => {
-    if (mainWindow) {
-      mainWindow.minimize();
-    }
   });
 
+  mainWindow.setResizable(false);
   mainWindow.on('ready-to-show', () => {
     if (mainWindow) {
       const iconPath = join(app.getPath('appData'), '..', 'Local', 'BHBot', 'icon.png');
       fs.readFile(iconPath, (error, data) => {
         if (error) {
-            console.error('Failed to read icon file:', error);
-            return;
-        } else {
-          const iconBase64 = `data:image/png;base64,${data.toString('base64')}`;
-          mainWindow!.webContents.send('icon', iconBase64);
+          console.error('Failed to read icon file:', error);
+          return;
         }
+        const iconBase64 = `data:image/png;base64,${data.toString('base64')}`;
+        mainWindow!.webContents.send('icon', iconBase64);
         mainWindow!.show();
       });
-      mainWindow.show()
     }
-  })
+  });
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
-    shell.openExternal(details.url)
-    return { action: 'deny' }
-  })
+    shell.openExternal(details.url);
+    return { action: 'deny' };
+  });
 
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
+    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL']);
   } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
+    mainWindow.loadFile(join(__dirname, '../renderer/index.html'));
   }
+
+  ipcMain.on('minimize-app', () => mainWindow?.minimize());
 }
 
 app.whenReady().then(async () => {
   electronApp.setAppUserModelId('com.electron')
+
+  trayIcon()
+  createWindow()
 
   const defaultConfig = {
     "character": "Random",
@@ -121,11 +130,17 @@ app.whenReady().then(async () => {
   const installDepsCommand = `pip install -r ${join(bhbotPath, 'requirements.txt')}`
   const urls = await fetchAndProcessHTML('https://www.brawlhalla.com/legends');
   
-  if (!fs.existsSync(configPath) || !fs.existsSync(legendsPath) || !fs.existsSync(statsPath)) {
+  if (!fs.existsSync(configPath) || !fs.existsSync(legendsPath) || !fs.existsSync(statsPath) || !fs.existsSync(legendStatsPath)) {
     fs.mkdirSync(join(app.getPath('appData'), '..', 'Local', 'BHBot'), { recursive: true });
     fs.writeFileSync(configPath, JSON.stringify(defaultConfig), { encoding: 'utf-8' });
     fs.writeFileSync(legendsPath, '');
     fs.writeFileSync(statsPath, JSON.stringify(stats), { encoding: 'utf-8' });
+    fs.writeFileSync(legendStatsPath, JSON.stringify(legendStats), { encoding: 'utf-8' });
+  } else {
+    const data = fs.readFileSync(legendStatsPath, { encoding: 'utf-8' });
+    if (data != '') {
+      legendStats = JSON.parse(data);
+    }
   }
 
   try {
@@ -149,9 +164,28 @@ app.whenReady().then(async () => {
     }
     console.log('Dependencies installed:', stdout);
     console.log('Installation errors (if any):', stderr);
-
-    trayIcon()
-    createWindow()
+    let intervalId;
+    if (mainWindow) {
+      mainWindow.destroy();
+      
+      intervalId = setInterval(() => {
+        if (mainWindow) {
+          mainWindow.webContents.send('done-loading', true);
+          const iconPath = join(app.getPath('appData'), '..', 'Local', 'BHBot', 'icon.png');
+          fs.readFile(iconPath, (error, data) => {
+            if (error) {
+                console.error('Failed to read icon file:', error);
+                return;
+            }
+            const iconBase64 = `data:image/png;base64,${data.toString('base64')}`;
+            mainWindow!.show();
+            mainWindow!.webContents.send('icon', iconBase64);
+          });
+        }
+      }, 100);
+    
+      createWindow(1150, 690);
+    }
 
     // Execute the command to run the Python script
     app.on('browser-window-created', (_, window) => {
@@ -159,6 +193,7 @@ app.whenReady().then(async () => {
     })
 
     ipcMain.on('request-name', async (event) => {
+      clearInterval(intervalId);
       event.reply('response-request-name', getProfilePictureAndName());
     });
   
@@ -176,16 +211,17 @@ app.whenReady().then(async () => {
             }
         
             if (newNamesToAdd.length > 0) {
-              const jsonToWrite = JSON.stringify(newNamesToAdd, null, 2); // Convert array to JSON string formatted nicely
+              const jsonToWrite = JSON.stringify(newNamesToAdd, null, 2);
               fs.writeFileSync(legendsPath, jsonToWrite, { encoding: 'utf-8' });
             }
           }
-          event.reply('response-urls', urls.urls, urls.names, urls.alts);
+
+          event.reply('response-urls', urls.urls, urls.alts, urls.imgs);
         } else {
-          event.reply('response-urls', [], [], []);
+          event.reply('response-urls', [], [], [], []);
         }
       } catch {
-        event.reply('response-urls', [], [], []);
+        event.reply('response-urls', [], [], [], []);
       }
     });
 
@@ -267,48 +303,15 @@ app.on('before-quit', () => {
   saveStats();
 });
 
+let isLoading = true;
+
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
+  if (process.platform !== 'darwin' && !isLoading) {
     app.quit()
+  } else {
+    isLoading = false
   }
 })
-
-const fetchAndProcessHTML = async (url: string) => {
-  try {
-    const response = await axios.get(url);
-    const htmlContent = response.data;
-    const urls = extractDataSources(htmlContent);
-    return urls;
-  } catch (error) {
-    console.error('Error fetching HTML content:', error);
-    return null;
-  }
-};
-
-
-const extractDataSources = (html: string): { urls: string[], names: string[], alts: string[] } => {
-  const $ = cheerio.load(html);
-  const urls: string[] = [];
-  const names: string[] = [];
-  const alts: string[] = [];
-  $('img').each((_i, elem) => {
-    const parentLink = $(elem).closest('a');
-    const href = parentLink.attr('href');
-    const src = $(elem).attr('src');
-    const alt = $(elem).attr('alt') || '';
-
-    if (href?.startsWith('/legends/')) {
-      if (src) {
-        urls.push(src);
-        const name = href.slice('/legends/'.length);
-        names.push(name);
-        alts.push(alt);
-      }
-    }
-  });
-
-  return { urls, names, alts };
-};
 
 function parseCharacterData(data: string) {
   const regex = /<([^>]+) \(lvl: (\d+), xp: (\d+), unlocked: (True|False)\)>/;
@@ -335,7 +338,7 @@ function fetchLogs() {
     axios.get('http://127.0.0.1:30000/get_logs')
       .then(response => {
         response.data.forEach((item: string) => {
-          console.log(item)
+          // console.log(item)
           let logMessage = { text: "null", color: 'white' };
           switch (item) {
             case 'waiting_for_bh_window':
@@ -369,6 +372,10 @@ function fetchLogs() {
               logMessage.color = '#FF00FF';
               break;
             case 'initialized':
+              legendStats = legendStatsTemp;
+              legendStatsTemp = [];
+              fs.writeFileSync(legendStatsPath, JSON.stringify(legendStats), { encoding: 'utf-8' });
+              console.log(legendStats)
               logMessage.text = "Character data loaded";
               logMessage.color = '#FF0000';
               break;
@@ -403,10 +410,20 @@ function fetchLogs() {
             default:
               if (item.startsWith("<") && item.endsWith(">")) {
                 const parsedData = parseCharacterData(item);
-                if (parsedData) {
-                  logMessage.text = "Loaded " + reverseFormatCharacterName(parsedData?.name) + ` (lvl: ${parsedData?.level}, xp: ${parsedData?.xp})`;
-                  logMessage.color = 'cyan';
+                if (parsedData && parsedData.name) {
+                    const existingEntry = legendStats.find(stat => stat.name === reverseFormatCharacterName(parsedData.name));
+                    const data: LegendStats = {
+                        name: reverseFormatCharacterName(parsedData.name),
+                        level: parsedData.level,
+                        xp: parsedData.xp,
+                        playtime: existingEntry ? existingEntry.playtime : 0 
+                    };
+                    legendStatsTemp.push(data);
+                    logMessage.text = "Loaded " + reverseFormatCharacterName(parsedData.name) + ` (lvl: ${parsedData.level}, xp: ${parsedData.xp})`;
+                    logMessage.color = 'cyan';
                 }
+              } else if (item.includes("pick_char")) {
+                  console.log(item);
               }
               break;
           }
@@ -449,6 +466,26 @@ function updateRunTime() {
     const currentTime = Date.now();
     const elapsedTime = currentTime - lastUpdateTime;
     stats.run_time += elapsedTime;
+    const configPath = join(app.getPath('appData'), '..', 'Local', 'BHBot', 'bhbot.cfg');
+    try {
+      const formatSelected = (formattedName: string): string => {
+        return formattedName.split(' ').map((word, index) => {
+            if (index !== 0) {
+                return word.charAt(0).toUpperCase() + word.slice(1);
+            }
+            return word;
+        }).join(' ');
+      };
+
+      const configFile = fs.readFileSync(configPath, { encoding: 'utf-8' });
+      const config = JSON.parse(configFile);
+      const legend = legendStats.find(stat => stat.name === formatSelected(config.character));
+      if (legend) {
+        legend.playtime += 60000;
+        fs.writeFileSync(legendStatsPath, JSON.stringify(legendStats), { encoding: 'utf-8' });
+      }
+
+    } catch {}
     saveStats();
   }
   lastUpdateTime = Date.now();
@@ -457,8 +494,65 @@ function updateRunTime() {
 function setRunTime() {
   if (mainWindow) {
     mainWindow.webContents.send('time-message', ((stats.run_time / 3600000).toFixed(0)));
+    mainWindow.webContents.send('legend-stats', (legendStats));
   }
 }
 
 setInterval(setRunTime, 1000);
 setInterval(updateRunTime, 60000);
+
+const fetchAndProcessHTML = async (url: string) => {
+  const simplifyImageUrl = (url) => {
+    const parts = url.split('.png');
+    return `${parts[0]}.png`;
+  };
+
+  const extractDataSources = async (html: string): Promise<{ urls: string[]; names: string[]; alts: string[]; imgs: string[]}> => {
+    const $ = cheerio.load(html);
+    const urls: string[] = [];
+    const names: string[] = [];
+    const alts: string[] = [];
+    const imgs: string[] = [];
+
+    $('img').each((_i, elem) => {
+      const parentLink = $(elem).closest('a');
+      const href = parentLink.attr('href');
+      const src = $(elem).attr('src');
+      const alt = $(elem).attr('alt') || '';
+  
+      if (href?.startsWith('/legends/')) {
+        if (src) {
+          urls.push(src);
+          const name = href.slice('/legends/'.length);
+          names.push(name);
+          alts.push(alt);
+        }
+      }
+    });
+
+    for (let i = 0; i < alts.length; i++) {
+      try {
+        const response = await axios.get("https://www.brawlhalla.com/legends/" + names[i].replace(/ /g, "_"));
+        const htmlContent = response.data;
+        const $page = cheerio.load(htmlContent);
+        const imageElement = $page(`img[alt="${alts[i]} Splash Art"]`);
+        const imgHref = imageElement.attr('src');
+        imgs.push(simplifyImageUrl(imgHref));
+      } catch {
+        continue;
+      }
+    }
+
+    return { urls, names, alts, imgs };
+  };
+
+  try {
+    const response = await axios.get(url);
+    const htmlContent = response.data;
+    const data = await extractDataSources(htmlContent);
+    return data;
+  } catch (error) {
+    console.error('Error fetching HTML content:', error);
+    return null;
+  }
+};
