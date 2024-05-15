@@ -90,3 +90,5 @@ zope.event==5.0
 zope.interface==6.2
 Flask==2.2.3
 flask_cors==4.0.1
+pycaw==20240210
+Werkzeug==2.2.2
