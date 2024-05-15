@@ -128,7 +128,7 @@ function LegendGallery({ imageUrls, imageAlts, poseUrls, currentIndex }: ButtonP
                 top: '370px',
                 fontFamily: "'Brawlhalla', sans-serif",
             }}>{imageAlts[selectedImage]}</div>}
-            {stats && stats != undefined && selectedImage !== null && <div style={{
+            {stats && selectedImage !== null && stats[selectedImage] && <div style={{
                 position: 'absolute',
                 fontSize: '19px',
                 textAlign: 'left',
@@ -137,7 +137,7 @@ function LegendGallery({ imageUrls, imageAlts, poseUrls, currentIndex }: ButtonP
                 top: '430px',
                 fontFamily: "'Brawlhalla', sans-serif",
             }}>{`Level: ${(stats[selectedImage].level)}`}</div>}
-            {stats && stats != undefined && selectedImage !== null && <div style={{
+            {stats && selectedImage !== null && stats[selectedImage] && <div style={{
                 position: 'absolute',
                 fontSize: '19px',
                 textAlign: 'left',
@@ -146,7 +146,7 @@ function LegendGallery({ imageUrls, imageAlts, poseUrls, currentIndex }: ButtonP
                 top: '470px',
                 fontFamily: "'Brawlhalla', sans-serif",
             }}>{`XP: ${(stats[selectedImage].xp)}`}</div>}
-            {stats && stats != undefined && selectedImage !== null && <div style={{
+            {stats && selectedImage !== null && stats[selectedImage] && <div style={{
                 position: 'absolute',
                 fontSize: '19px',
                 textAlign: 'left',
@@ -162,33 +162,6 @@ function LegendGallery({ imageUrls, imageAlts, poseUrls, currentIndex }: ButtonP
                 height: `300px`,
                 transform: 'translateX(-50%) scale(0.71)'
             }}></img>}
-            {!stats && <div style={{
-                position: 'absolute',
-                fontSize: '19px',
-                textAlign: 'left',
-                color: '#6ec8d3',
-                left: '204px',
-                top: '430px',
-                fontFamily: "'Brawlhalla', sans-serif",
-            }}>{`Level: 0`}</div>}
-            {!stats && <div style={{
-                position: 'absolute',
-                fontSize: '19px',
-                textAlign: 'left',
-                color: '#6ec8d3',
-                left: '204px',
-                top: '470px',
-                fontFamily: "'Brawlhalla', sans-serif",
-            }}>{`XP: 0`}</div>}
-            {!stats && <div style={{
-                position: 'absolute',
-                fontSize: '19px',
-                textAlign: 'left',
-                color: '#6ec8d3',
-                left: '204px',
-                top: '510px',
-                fontFamily: "'Brawlhalla', sans-serif",
-            }}>{`Time: 0h`}</div>}
             {selectedImage === null && <div style={{
                 position: 'absolute',
                 fontSize: '22px',
