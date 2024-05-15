@@ -215,7 +215,7 @@ function LegendGallery({ imageUrls, imageAlts, poseUrls, currentIndex }: ButtonP
                 left: '204px',
                 top: '470px',
                 fontFamily: "'Brawlhalla', sans-serif",
-            }}>{`Total Time: ${((stats.reduce((sum, item) => sum + item.playtime, 0)) / 3600000).toFixed(0)}h`}</div>}
+            }}>{`Time: ${((stats.reduce((sum, item) => sum + item.playtime, 0)) / 3600000).toFixed(0)}h`}</div>}
         </>
     );
 }

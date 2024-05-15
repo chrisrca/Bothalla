@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, ipcMain, Tray, Menu } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, Tray, Menu, globalShortcut } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
@@ -25,7 +25,6 @@ interface LegendStats {
   playtime: number;
 }
 
-let legendStatsTemp: LegendStats[] = [];
 let legendStats: LegendStats[] = [];
 
 function trayIcon() {
@@ -71,7 +70,8 @@ function createWindow(width = 250, height = 182.75) {
     ...(process.platform === 'linux' ? { icon } : { icon }),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
-      sandbox: false
+      sandbox: false,
+      devTools: false
     }
   });
 
@@ -108,6 +108,21 @@ function createWindow(width = 250, height = 182.75) {
 app.whenReady().then(async () => {
   electronApp.setAppUserModelId('com.electron')
 
+  app.on('browser-window-focus', function () {
+    globalShortcut.register("CommandOrControl+R", () => {
+        console.log("CommandOrControl+R is pressed: Shortcut Disabled");
+    });
+    globalShortcut.register("F5", () => {
+        console.log("F5 is pressed: Shortcut Disabled");
+    });
+  });
+
+  app.on('browser-window-blur', function () {
+    globalShortcut.unregister('CommandOrControl+R');
+    globalShortcut.unregister('F5');
+    globalShortcut.unregister('CommandOrControl+Shift+I');
+  });
+  
   trayIcon()
   createWindow()
 
@@ -195,6 +210,17 @@ app.whenReady().then(async () => {
     ipcMain.on('request-name', async (event) => {
       clearInterval(intervalId);
       event.reply('response-request-name', getProfilePictureAndName());
+    });
+
+    ipcMain.on('request-time', async (event) => {
+      event.reply('response-time', stats.run_time);
+    });
+
+    ipcMain.on('set-not-first-time', async (_event) => {
+      if (stats.run_time == 0) {
+        stats.run_time = 1
+        saveStats()
+      }
     });
   
     ipcMain.on('request-urls', async (event) => {
@@ -369,9 +395,6 @@ function fetchLogs() {
               logMessage.color = '#FF00FF';
               break;
             case 'initialized':
-              legendStats = legendStatsTemp;
-              legendStatsTemp = [];
-              fs.writeFileSync(legendStatsPath, JSON.stringify(legendStats), { encoding: 'utf-8' });
               logMessage.text = "Character data loaded";
               logMessage.color = '#FF0000';
               break;
@@ -407,14 +430,20 @@ function fetchLogs() {
               if (item.startsWith("<") && item.endsWith(">")) {
                 const parsedData = parseCharacterData(item);
                 if (parsedData && parsedData.name) {
-                    const existingEntry = legendStats.find(stat => stat.name === reverseFormatCharacterName(parsedData.name));
+                    const existingIndex = legendStats.findIndex(stat => stat.name === reverseFormatCharacterName(parsedData.name));
                     const data: LegendStats = {
                         name: reverseFormatCharacterName(parsedData.name),
                         level: parsedData.level,
                         xp: parsedData.xp,
-                        playtime: existingEntry ? existingEntry.playtime : 0 
+                        playtime: existingIndex !== -1 ? legendStats[existingIndex].playtime : 0 
                     };
-                    legendStatsTemp.push(data);
+                    
+                    if (existingIndex !== -1) {
+                        legendStats[existingIndex] = data;
+                    } else {
+                        legendStats.push(data);
+                    }
+                    fs.writeFileSync(legendStatsPath, JSON.stringify(legendStats), { encoding: 'utf-8' });
                     logMessage.text = "Loaded " + reverseFormatCharacterName(parsedData.name) + ` (lvl: ${parsedData.level}, xp: ${parsedData.xp})`;
                     logMessage.color = 'cyan';
                 }
@@ -426,7 +455,12 @@ function fetchLogs() {
                     const level = parseInt(matches[2], 10);
                     const xp = parseInt(matches[3], 10);
 
-                    // Update stats here
+                    const existingIndex = legendStats.findIndex(stat => stat.name === name);
+
+                    if (existingIndex !== -1) {
+                        legendStats[existingIndex].level = level;
+                        legendStats[existingIndex].xp = xp;
+                    }
 
                     if (selectedLegend == "Random") {
                       logMessage.text = "Picked Random";
@@ -470,6 +504,7 @@ function loadStats() {
 
 function saveStats() {
   fs.writeFileSync(statsPath, JSON.stringify(stats, null, 2));
+  fs.writeFileSync(legendStatsPath, JSON.stringify(legendStats), { encoding: 'utf-8' });
 }
 
 function updateRunTime() {

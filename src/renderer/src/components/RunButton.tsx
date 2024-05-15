@@ -9,6 +9,7 @@ import hoverSoundRun from '../../../../resources/hover.mp3';
 import hoverSoundStop from '../../../../resources/hover.mp3';  // Assuming hover sound for stop
 
 function RunButton(): JSX.Element {
+    const [firstLoad, setFirstLoad] = useState(true);
     const [isRunning, setIsRunning] = useState(false);
     const [buttonStyle, setButtonStyle] = useState({
         backgroundImage: `url(${defaultState})`
@@ -21,7 +22,7 @@ function RunButton(): JSX.Element {
         window.electron.ipcRenderer.send('toggle-bot');
         setIsRunning(!isRunning);
         setDisabled(true);
-        setTimeout(() => setDisabled(false), 3000);
+        setTimeout(() => setDisabled(false), 5000);
     };
 
     useEffect(() => {
@@ -30,11 +31,17 @@ function RunButton(): JSX.Element {
         } else {
             setButtonStyle({ backgroundImage: `url(${clickState})` });
         }
+
+        if (firstLoad) {
+            setButtonStyle({ backgroundImage: `url(${defaultState})` });
+            setFirstLoad(false);
+        }
+
         // Ensure button is re-enabled after the timeout
         const timeout = setTimeout(() => {
             const currentState = isRunning ? defaultStateStop : defaultState;
             setButtonStyle({ backgroundImage: `url(${currentState})` });
-        }, 10000);
+        }, 5000);
         return () => clearTimeout(timeout);
     }, [isRunning]);
 
