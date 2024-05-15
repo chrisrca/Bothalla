@@ -153,6 +153,8 @@ app.whenReady().then(async () => {
   const installDepsCommand = `pip install -r ${join(bhbotPath, 'requirements.txt')}`
   const urls = await fetchAndProcessHTML('https://www.brawlhalla.com/legends');
   
+  const firstTime = (fs.existsSync(configPath) || fs.existsSync(legendsPath) || fs.existsSync(statsPath) || fs.existsSync(legendStatsPath))
+
   if (!fs.existsSync(configPath) || !fs.existsSync(legendsPath) || !fs.existsSync(statsPath) || !fs.existsSync(legendStatsPath)) {
     fs.mkdirSync(join(app.getPath('appData'), '..', 'Local', 'BHBot'), { recursive: true });
     fs.writeFileSync(configPath, JSON.stringify(defaultConfig), { encoding: 'utf-8' });
@@ -179,7 +181,8 @@ app.whenReady().then(async () => {
 
   loadStats()
 
-  if (stats.run_time == 0) {
+  if (firstTime) {
+
     const command = `powershell -ExecutionPolicy Bypass -File ${(join(bhbotPath, 'install-py.ps1'))}`;
 
     exec(command, (error, stdout, stderr) => {
