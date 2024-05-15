@@ -16,6 +16,8 @@ let stats = {
   "run_time": 0,
 };
 
+let nopy = false;
+
 let lastUpdateTime = Date.now();
 
 interface LegendStats {
@@ -108,6 +110,11 @@ function createWindow(width = 250, height = 182.75) {
 app.whenReady().then(async () => {
   electronApp.setAppUserModelId('com.electron')
 
+  const singleInst = app.requestSingleInstanceLock();
+  if (!singleInst) {
+    app.quit()
+  }
+
   app.on('browser-window-focus', function () {
     globalShortcut.register("CommandOrControl+R", () => {
         console.log("CommandOrControl+R is pressed: Shortcut Disabled");
@@ -172,154 +179,338 @@ app.whenReady().then(async () => {
 
   loadStats()
 
-  exec(installDepsCommand, { cwd: bhbotPath }, (error) => {
-    if (error) {
-        if (mainWindow) { 
-          mainWindow.webContents.send('log-message', { text: "Error Installing python dependencies.", color: 'red' });
-          mainWindow.webContents.send('log-message', { text: "Please make sure Python 3.11.5 is installed.", color: 'red' });
+  if (stats.run_time == 0) {
+    const command = `powershell -ExecutionPolicy Bypass -File ${(join(bhbotPath, 'install-py.ps1'))}`;
+
+    exec(command, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`Error executing script: ${error.message}`);
+            return;
         }
-        return;
-    }
-    let intervalId;
-    if (mainWindow) {
-      mainWindow.destroy();
-      
-      intervalId = setInterval(() => {
-        if (mainWindow) {
-          mainWindow.webContents.send('done-loading', true);
-          const iconPath = join(app.getPath('appData'), '..', 'Local', 'BHBot', 'icon.png');
-          fs.readFile(iconPath, (error, data) => {
-            if (error) {
-                mainWindow!.show();
-                return;
-            }
-            const iconBase64 = `data:image/png;base64,${data.toString('base64')}`;
-            mainWindow!.show();
-            mainWindow!.webContents.send('icon', iconBase64);
-          });
+
+        if (stderr) {
+            console.error(`Error output: ${stderr}`);
+            return;
         }
-      }, 100);
-    
-      createWindow(1150, 690);
-    }
 
-    app.on('browser-window-created', (_, window) => {
-      optimizer.watchWindowShortcuts(window)
-    })
-
-    ipcMain.on('request-name', async (event) => {
-      clearInterval(intervalId);
-      event.reply('response-request-name', getProfilePictureAndName());
-    });
-
-    ipcMain.on('request-time', async (event) => {
-      event.reply('response-time', stats.run_time);
-    });
-
-    ipcMain.on('set-not-first-time', async (_event) => {
-      if (stats.run_time == 0) {
-        stats.run_time = 1
-        saveStats()
-      }
-    });
-  
-    ipcMain.on('request-urls', async (event) => {
-      try {
-        if (urls) {
-          let newNamesToAdd: string[] = [];
-      
-          if (fs.existsSync(legendsPath)) {
-            const configFile = fs.readFileSync(legendsPath, { encoding: 'utf-8' });
-            for (let i = 0; i < urls.alts.length; i++) {
-              if (!configFile.includes(urls.alts[i].toLowerCase())) {
-                newNamesToAdd.push(urls.alts[i].toLowerCase());
-              }
-            }
-        
-            if (newNamesToAdd.length > 0) {
-              const jsonToWrite = JSON.stringify(newNamesToAdd, null, 2);
-              fs.writeFileSync(legendsPath, jsonToWrite, { encoding: 'utf-8' });
-            }
-          }
-
-          event.reply('response-urls', urls.urls, urls.alts, urls.imgs);
-        } else {
-          event.reply('response-urls', [], [], [], []);
-        }
-      } catch {
-        event.reply('response-urls', [], [], [], []);
-      }
-    });
-
-    ipcMain.on('request-selected', async (event) => {
-      try {
-        const formatSelected = (formattedName: string): string => {
-          return formattedName.split(' ').map((word, index) => {
-              if (index !== 0) {
-                  return word.charAt(0).toUpperCase() + word.slice(1);
-              }
-              return word;
-          }).join(' ');
-        };
-
-        const configFile = fs.readFileSync(configPath, { encoding: 'utf-8' });
-        const config = JSON.parse(configFile);
-        selectedLegend = config.character
-        event.reply('response-selected', formatSelected(config.character));
-      } catch {
-        event.reply('response-selected', "");
-      }
-    });
-    
-    ipcMain.on('legend', async (_event, newCharacter: string) => {
-      try {
-        const configFile = fs.readFileSync(configPath, { encoding: 'utf-8' });
-        const config = JSON.parse(configFile);
-        config.character = newCharacter.charAt(0).toUpperCase() + newCharacter.slice(1).toLowerCase();;
-        selectedLegend = config.character
-        const formattedJson = JSON.stringify(config, null, 0)
-          .replace(/:/g, ': ')
-          .replace(/,/g, ', ');
-
-          fs.writeFileSync(configPath, formattedJson, { encoding: 'utf-8' });
-      } catch {}
-    });
-
-    ipcMain.on('mode', async (_event, mode: string) => {
-      try {
-        const configFile = fs.readFileSync(configPath, { encoding: 'utf-8' });
-        const config = JSON.parse(configFile);
-        config.mode_name = mode;
-        const formattedJson = JSON.stringify(config, null, 0)
-          .replace(/:/g, ': ')
-          .replace(/,/g, ', ');
-
-          fs.writeFileSync(configPath, formattedJson, { encoding: 'utf-8' });
-      } catch {}
-    });
-  
-    ipcMain.on('toggle-bot', async () => {
-    
-      const runPythonScriptCommand = `python ${join(bhbotPath, 'main.pyw')}`;
-
-      if (!runBot && mainWindow) {
-        runBot = true
-        mainWindow.webContents.send('log-message', { text: "Initializing Bot", color: 'yellow' });
-        exec(runPythonScriptCommand, { cwd: bhbotPath }, (error) => {
+        console.log(`Script output: ${stdout}`);
+        exec(installDepsCommand, { cwd: bhbotPath }, (error) => {
           if (error) {
-              return;
+              if (mainWindow) { 
+                mainWindow.webContents.send('log-message', { text: "Error Installing python dependencies.", color: 'red' });
+                mainWindow.webContents.send('log-message', { text: "Please make sure Python 3.11.5 is installed.", color: 'red' });
+                nopy = true
+              }
           }
+          let intervalId;
+          if (mainWindow) {
+            mainWindow.destroy();
+            
+            intervalId = setInterval(() => {
+              if (mainWindow) {
+                mainWindow.webContents.send('done-loading', true);
+                const iconPath = join(app.getPath('appData'), '..', 'Local', 'BHBot', 'icon.png');
+                fs.readFile(iconPath, (error, data) => {
+                  if (error) {
+                      mainWindow!.show();
+                      return;
+                  }
+                  const iconBase64 = `data:image/png;base64,${data.toString('base64')}`;
+                  mainWindow!.show();
+                  mainWindow!.webContents.send('icon', iconBase64);
+                });
+              }
+            }, 100);
+          
+            createWindow(1150, 690);
+          }
+      
+          app.on('browser-window-created', (_, window) => {
+            optimizer.watchWindowShortcuts(window)
+          })
+      
+          ipcMain.on('request-name', async (event) => {
+            clearInterval(intervalId);
+            event.reply('response-request-name', getProfilePictureAndName());
+          });
+      
+          ipcMain.on('request-time', async (event) => {
+            event.reply('response-time', stats.run_time);
+          });
+      
+          ipcMain.on('set-not-first-time', async (_event) => {
+            if (stats.run_time == 0) {
+              stats.run_time = 1
+              saveStats()
+            }
+          });
+        
+          ipcMain.on('request-urls', async (event) => {
+            try {
+              if (urls) {
+                let newNamesToAdd: string[] = [];
+            
+                if (fs.existsSync(legendsPath)) {
+                  const configFile = fs.readFileSync(legendsPath, { encoding: 'utf-8' });
+                  for (let i = 0; i < urls.alts.length; i++) {
+                    if (!configFile.includes(urls.alts[i].toLowerCase())) {
+                      newNamesToAdd.push(urls.alts[i].toLowerCase());
+                    }
+                  }
+              
+                  if (newNamesToAdd.length > 0) {
+                    const jsonToWrite = JSON.stringify(newNamesToAdd, null, 2);
+                    fs.writeFileSync(legendsPath, jsonToWrite, { encoding: 'utf-8' });
+                  }
+                }
+      
+                event.reply('response-urls', urls.urls, urls.alts, urls.imgs);
+              } else {
+                event.reply('response-urls', [], [], [], []);
+              }
+            } catch {
+              event.reply('response-urls', [], [], [], []);
+            }
+          });
+      
+          ipcMain.on('request-selected', async (event) => {
+            try {
+              const formatSelected = (formattedName: string): string => {
+                return formattedName.split(' ').map((word, index) => {
+                    if (index !== 0) {
+                        return word.charAt(0).toUpperCase() + word.slice(1);
+                    }
+                    return word;
+                }).join(' ');
+              };
+      
+              const configFile = fs.readFileSync(configPath, { encoding: 'utf-8' });
+              const config = JSON.parse(configFile);
+              selectedLegend = config.character
+              event.reply('response-selected', formatSelected(config.character));
+            } catch {
+              event.reply('response-selected', "");
+            }
+          });
+          
+          ipcMain.on('legend', async (_event, newCharacter: string) => {
+            try {
+              const configFile = fs.readFileSync(configPath, { encoding: 'utf-8' });
+              const config = JSON.parse(configFile);
+              config.character = newCharacter.charAt(0).toUpperCase() + newCharacter.slice(1).toLowerCase();;
+              selectedLegend = config.character
+              const formattedJson = JSON.stringify(config, null, 0)
+                .replace(/:/g, ': ')
+                .replace(/,/g, ', ');
+      
+                fs.writeFileSync(configPath, formattedJson, { encoding: 'utf-8' });
+            } catch {}
+          });
+      
+          ipcMain.on('mode', async (_event, mode: string) => {
+            try {
+              const configFile = fs.readFileSync(configPath, { encoding: 'utf-8' });
+              const config = JSON.parse(configFile);
+              config.mode_name = mode;
+              const formattedJson = JSON.stringify(config, null, 0)
+                .replace(/:/g, ': ')
+                .replace(/,/g, ', ');
+      
+                fs.writeFileSync(configPath, formattedJson, { encoding: 'utf-8' });
+            } catch {}
+          });
+        
+          ipcMain.on('toggle-bot', async () => {
+      
+            const runPythonScriptCommand = `python ${join(bhbotPath, 'main.pyw')}`;
+      
+            if (!runBot && mainWindow) {
+              runBot = true
+              if (!nopy) {
+              mainWindow.webContents.send('log-message', { text: "Initializing Bot", color: 'yellow' });
+                exec(runPythonScriptCommand, { cwd: bhbotPath }, (error) => {
+                  if (error) {
+                      return;
+                  }
+                });
+              } else {
+                mainWindow.webContents.send('log-message', { text: "Error running bot.", color: 'red' });
+                mainWindow.webContents.send('log-message', { text: "Please make sure Python 3.11.5 is installed.", color: 'red' });
+              }
+      
+            } else if (mainWindow) {
+              if (!nopy) { 
+                mainWindow.webContents.send('log-message', { text: "Disabling Bot", color: 'red' });
+              }
+              runBot = false
+            }
+          });
+          
+          app.on('activate', function () {
+            if (BrowserWindow.getAllWindows().length === 0) createWindow()
+          })
         });
-      } else if (mainWindow) {
-        mainWindow.webContents.send('log-message', { text: "Disabling Bot", color: 'red' });
-        runBot = false
-      }
+
     });
-    
-    app.on('activate', function () {
-      if (BrowserWindow.getAllWindows().length === 0) createWindow()
-    })
-  });
+  } else {
+      exec(installDepsCommand, { cwd: bhbotPath }, (error) => {
+          if (error) {
+              if (mainWindow) { 
+                mainWindow.webContents.send('log-message', { text: "Error Installing python dependencies.", color: 'red' });
+                mainWindow.webContents.send('log-message', { text: "Please make sure Python 3.11.5 is installed.", color: 'red' });
+                nopy = true
+              }
+          }
+          let intervalId;
+          if (mainWindow) {
+            mainWindow.destroy();
+            
+            intervalId = setInterval(() => {
+              if (mainWindow) {
+                mainWindow.webContents.send('done-loading', true);
+                const iconPath = join(app.getPath('appData'), '..', 'Local', 'BHBot', 'icon.png');
+                fs.readFile(iconPath, (error, data) => {
+                  if (error) {
+                      mainWindow!.show();
+                      return;
+                  }
+                  const iconBase64 = `data:image/png;base64,${data.toString('base64')}`;
+                  mainWindow!.show();
+                  mainWindow!.webContents.send('icon', iconBase64);
+                });
+              }
+            }, 100);
+          
+            createWindow(1150, 690);
+          }
+
+          app.on('browser-window-created', (_, window) => {
+            optimizer.watchWindowShortcuts(window)
+          })
+
+          ipcMain.on('request-name', async (event) => {
+            clearInterval(intervalId);
+            event.reply('response-request-name', getProfilePictureAndName());
+          });
+
+          ipcMain.on('request-time', async (event) => {
+            event.reply('response-time', stats.run_time);
+          });
+
+          ipcMain.on('set-not-first-time', async (_event) => {
+            if (stats.run_time == 0) {
+              stats.run_time = 1
+              saveStats()
+            }
+          });
+        
+          ipcMain.on('request-urls', async (event) => {
+            try {
+              if (urls) {
+                let newNamesToAdd: string[] = [];
+            
+                if (fs.existsSync(legendsPath)) {
+                  const configFile = fs.readFileSync(legendsPath, { encoding: 'utf-8' });
+                  for (let i = 0; i < urls.alts.length; i++) {
+                    if (!configFile.includes(urls.alts[i].toLowerCase())) {
+                      newNamesToAdd.push(urls.alts[i].toLowerCase());
+                    }
+                  }
+              
+                  if (newNamesToAdd.length > 0) {
+                    const jsonToWrite = JSON.stringify(newNamesToAdd, null, 2);
+                    fs.writeFileSync(legendsPath, jsonToWrite, { encoding: 'utf-8' });
+                  }
+                }
+
+                event.reply('response-urls', urls.urls, urls.alts, urls.imgs);
+              } else {
+                event.reply('response-urls', [], [], [], []);
+              }
+            } catch {
+              event.reply('response-urls', [], [], [], []);
+            }
+          });
+
+          ipcMain.on('request-selected', async (event) => {
+            try {
+              const formatSelected = (formattedName: string): string => {
+                return formattedName.split(' ').map((word, index) => {
+                    if (index !== 0) {
+                        return word.charAt(0).toUpperCase() + word.slice(1);
+                    }
+                    return word;
+                }).join(' ');
+              };
+
+              const configFile = fs.readFileSync(configPath, { encoding: 'utf-8' });
+              const config = JSON.parse(configFile);
+              selectedLegend = config.character
+              event.reply('response-selected', formatSelected(config.character));
+            } catch {
+              event.reply('response-selected', "");
+            }
+          });
+          
+          ipcMain.on('legend', async (_event, newCharacter: string) => {
+            try {
+              const configFile = fs.readFileSync(configPath, { encoding: 'utf-8' });
+              const config = JSON.parse(configFile);
+              config.character = newCharacter.charAt(0).toUpperCase() + newCharacter.slice(1).toLowerCase();;
+              selectedLegend = config.character
+              const formattedJson = JSON.stringify(config, null, 0)
+                .replace(/:/g, ': ')
+                .replace(/,/g, ', ');
+
+                fs.writeFileSync(configPath, formattedJson, { encoding: 'utf-8' });
+            } catch {}
+          });
+
+          ipcMain.on('mode', async (_event, mode: string) => {
+            try {
+              const configFile = fs.readFileSync(configPath, { encoding: 'utf-8' });
+              const config = JSON.parse(configFile);
+              config.mode_name = mode;
+              const formattedJson = JSON.stringify(config, null, 0)
+                .replace(/:/g, ': ')
+                .replace(/,/g, ', ');
+
+                fs.writeFileSync(configPath, formattedJson, { encoding: 'utf-8' });
+            } catch {}
+          });
+        
+          ipcMain.on('toggle-bot', async () => {
+
+            const runPythonScriptCommand = `python ${join(bhbotPath, 'main.pyw')}`;
+
+            if (!runBot && mainWindow) {
+              runBot = true
+              if (!nopy) {
+              mainWindow.webContents.send('log-message', { text: "Initializing Bot", color: 'yellow' });
+                exec(runPythonScriptCommand, { cwd: bhbotPath }, (error) => {
+                  if (error) {
+                      return;
+                  }
+                });
+              } else {
+                mainWindow.webContents.send('log-message', { text: "Error running bot.", color: 'red' });
+                mainWindow.webContents.send('log-message', { text: "Please make sure Python 3.11.5 is installed.", color: 'red' });
+              }
+
+            } else if (mainWindow) {
+              if (!nopy) { 
+                mainWindow.webContents.send('log-message', { text: "Disabling Bot", color: 'red' });
+              }
+              runBot = false
+            }
+          });
+          
+          app.on('activate', function () {
+            if (BrowserWindow.getAllWindows().length === 0) createWindow()
+          })
+        });
+  }
+
 })
 
 app.on('before-quit', () => {

@@ -1,5 +1,5 @@
 appId: com.electron.app
-productName: brawlhalla-bot
+productName: Bothalla
 directories:
   buildResources: build
 files:
@@ -12,7 +12,7 @@ files:
 asarUnpack:
   - resources/**
 win:
-  executableName: brawlhalla-bot
+  executableName: Bothalla
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}
