@@ -307,7 +307,6 @@ app.whenReady().then(async () => {
         mainWindow.webContents.send('log-message', { text: "Initializing Bot", color: 'yellow' });
         exec(runPythonScriptCommand, { cwd: bhbotPath }, (error) => {
           if (error) {
-              runBot = false
               return;
           }
         });
