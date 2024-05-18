@@ -1,10 +1,10 @@
-# brawlhalla-bot
+# Bothalla
 
-An Electron application with React and TypeScript
+Bothalla is an Electron application with React, TypeScript, and Python.  
 
-## Recommended IDE Setup
+Bothalla automatically plays the game Brawlhalla hidden in the background on your desktop to level up your in game legends. Legend experience is tracked and displayed on an interactive display of icons in a menu themed after the game.
 
-- [VSCode](https://code.visualstudio.com/) + [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) + [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
+![image](https://github.com/chrisrca/Bothalla/assets/104008364/3fb498ae-f9b6-4493-98ed-20e240881b67)
 
 ## Project Setup
 
@@ -23,6 +23,5 @@ $ yarn dev
 ### Build
 
 ```bash
-# Make sure this is done in an elevated cmd prompt and drag the src folder into the /resources folder in /dist
 $ yarn build:win
 ```
